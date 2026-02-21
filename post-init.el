@@ -9,5 +9,6 @@
 (require 'init-ui)
 (require 'init-tools)
 (require 'init-languages)
+(require 'init-org)
 
 (provide 'post-init)
