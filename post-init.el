@@ -8,5 +8,6 @@
 (require 'init-completion)
 (require 'init-ui)
 (require 'init-tools)
+(require 'init-languages)
 
 (provide 'post-init)
