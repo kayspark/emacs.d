@@ -6,5 +6,6 @@
 ;; Core
 (require 'init-evil)
 (require 'init-completion)
+(require 'init-ui)
 
 (provide 'post-init)
