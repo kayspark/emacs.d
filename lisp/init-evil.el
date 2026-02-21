@@ -6,6 +6,8 @@
   :init
   (setq evil-want-integration t
         evil-want-keybinding nil  ; let evil-collection handle it
+        evil-want-C-u-scroll t
+        evil-want-C-d-scroll t
         evil-split-window-below t
         evil-vsplit-window-right t
         evil-ex-substitute-global t
