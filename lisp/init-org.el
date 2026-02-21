@@ -139,9 +139,12 @@
                         "~/org/papers/misc.bib"))
   (citar-library-paths '("~/org/papers/pdfs"))
   (citar-notes-paths '("~/org/papers/notes"))
-  (citar-open-entry-function #'citar-open-entry-in-file)
+  (citar-open-entry-function #'citar-open-entry-in-file))
+
+(use-package citar-embark
+  :after (citar embark)
   :config
-  (require 'citar-embark))
+  (citar-embark-mode 1))
 
 (with-eval-after-load 'oc
   (setq org-cite-global-bibliography
@@ -237,103 +240,106 @@
           ("" "wrapfig" nil) ("" "xcolor" t) ("normalem" "ulem" t))))
 
 ;; --- Org keybindings (leader) ---
+;; Global notes prefix (not mode-specific)
 (with-eval-after-load 'general
-  (with-eval-after-load 'org
-    ;; Notes
-    (kp/leader-def
-      "n" '(:ignore t :wk "notes")
-      "nn" '(denote :wk "new note")
-      "nf" '(denote-open-or-create :wk "open/create")
-      "nl" '(denote-link :wk "insert link")
-      "nb" '(denote-backlinks :wk "backlinks")
-      "nr" '(denote-rename-file :wk "rename")
-      "ns" '(consult-denote-grep :wk "grep notes")
-      "nF" '(consult-denote-find :wk "find note"))
+  (kp/leader-def
+    "n" '(:ignore t :wk "notes")
+    "nn" '(denote :wk "new note")
+    "nf" '(denote-open-or-create :wk "open/create")
+    "nl" '(denote-link :wk "insert link")
+    "nb" '(denote-backlinks :wk "backlinks")
+    "nr" '(denote-rename-file :wk "rename")
+    "ns" '(consult-denote-grep :wk "grep notes")
+    "nF" '(consult-denote-find :wk "find note")))
 
-    ;; Org local leader
-    (kp/local-leader-def
-      :keymaps 'org-mode-map
-      "@" '(org-cite-insert :wk "insert citation")
-      "v" '(org-view-output-file :wk "view export"))
+;; Org-mode local leader bindings (deferred until org-mode loads)
+(with-eval-after-load 'org
+  (general-define-key
+   :states '(normal visual motion)
+   :keymaps 'org-mode-map
+   :prefix "SPC m"
+   "" '(:ignore t :wk "local")
+   "@" '(org-cite-insert :wk "insert citation")
+   "v" '(org-view-output-file :wk "view export")
+   "N" '(:ignore t :wk "noter")
+   "Nn" '(org-noter :wk "open session")
+   "Ni" '(org-noter-insert-note :wk "insert note")
+   "Ns" '(org-noter-sync-current-note :wk "sync current")
+   "Nj" '(org-noter-sync-next-note :wk "sync next")
+   "Nk" '(org-noter-sync-prev-note :wk "sync prev")
+   "Nq" '(org-noter-kill-session :wk "kill session"))
 
-    ;; Org noter
-    (kp/local-leader-def
-      :keymaps 'org-mode-map
-      "N" '(:ignore t :wk "noter")
-      "Nn" '(org-noter :wk "open session")
-      "Ni" '(org-noter-insert-note :wk "insert note")
-      "Ns" '(org-noter-sync-current-note :wk "sync current")
-      "Nj" '(org-noter-sync-next-note :wk "sync next")
-      "Nk" '(org-noter-sync-prev-note :wk "sync prev")
-      "Nq" '(org-noter-kill-session :wk "kill session"))
+  ;; Insert
+  (kp/leader-def
+    "ip" '(org-download-clipboard :wk "paste image"))
 
-    ;; Insert
-    (kp/leader-def
-      "ip" '(org-download-clipboard :wk "paste image"))
+  ;; Org evil keybindings
+  (evil-define-key 'normal org-mode-map
+    "z*" #'my/org-jump-to-heading-beginning
+    "z@" #'org-mark-subtree
+    "z^" #'org-sort
+    "zb" #'org-backward-heading-same-level
+    "zf" #'org-forward-heading-same-level
+    "zn" #'org-next-visible-heading
+    "zp" #'org-prev-visible-heading
+    "zu" #'outline-up-heading
+    "zz" #'org-refile))
 
-    ;; PDF noter
-    (kp/local-leader-def
-      :keymaps 'pdf-view-mode-map
-      "n" '(org-noter :wk "open noter"))
+;; PDF noter local leader (deferred until pdf-tools loads)
+(with-eval-after-load 'pdf-tools
+  (general-define-key
+   :states '(normal visual motion)
+   :keymaps 'pdf-view-mode-map
+   :prefix "SPC m"
+   "" '(:ignore t :wk "local")
+   "n" '(org-noter :wk "open noter")))
 
-    ;; Org evil keybindings
-    (evil-define-key 'normal org-mode-map
-      "z*" #'my/org-jump-to-heading-beginning
-      "z@" #'org-mark-subtree
-      "z^" #'org-sort
-      "zb" #'org-backward-heading-same-level
-      "zf" #'org-forward-heading-same-level
-      "zn" #'org-next-visible-heading
-      "zp" #'org-prev-visible-heading
-      "zu" #'outline-up-heading
-      "zz" #'org-refile)
+;; Helper functions
+(defun my/org-jump-to-heading-beginning ()
+  "Jump to the beginning of the current heading."
+  (interactive)
+  (org-back-to-heading)
+  (org-beginning-of-line))
 
-    (defun my/org-jump-to-heading-beginning ()
-      "Jump to the beginning of the current heading."
-      (interactive)
-      (org-back-to-heading)
-      (org-beginning-of-line))
+(defun org-view-output-file (&optional org-file-path)
+  "Visit the first output file found for the current org file."
+  (interactive)
+  (let* ((org-file-path (or org-file-path (buffer-file-name) ""))
+         (dir (file-name-directory org-file-path))
+         (basename (file-name-base org-file-path))
+         (output-file nil)
+         (extensions '("pdf" "md" "rst" "txt" "tex" "html"))
+         (external '("html")))
+    (dolist (ext extensions)
+      (unless output-file
+        (when (file-exists-p (concat dir basename "." ext))
+          (setq output-file (concat dir basename "." ext)))))
+    (if output-file
+        (if (member (file-name-extension output-file) external)
+            (browse-url-xdg-open output-file)
+          (pop-to-buffer (or (find-buffer-visiting output-file)
+                             (find-file-noselect output-file))))
+      (message "No exported file found"))))
 
-    ;; Embark action: open PDF from cite key in denote note
-    (with-eval-after-load 'embark
-      (defun kp/embark-open-note-pdf (file)
-        "Open the PDF associated with the first cite key found in FILE."
-        (interactive "fFile: ")
-        (let ((cite-key nil))
-          (with-temp-buffer
-            (insert-file-contents file)
-            (goto-char (point-min))
-            (when (re-search-forward "\\[cite:@\\([^]]+\\)\\]" nil t)
-              (setq cite-key (match-string 1))))
-          (if cite-key
-              (if-let ((files (citar-get-files (list cite-key))))
-                  (funcall citar-file-open-function (car files))
-                (message "No PDF found for cite key: %s" cite-key))
-            (message "No [cite:@key] found in %s" (file-name-nondirectory file)))))
-      (define-key embark-file-map (kbd "P") #'kp/embark-open-note-pdf))
+;; Embark action: open PDF from cite key in denote note
+(with-eval-after-load 'embark
+  (defun kp/embark-open-note-pdf (file)
+    "Open the PDF associated with the first cite key found in FILE."
+    (interactive "fFile: ")
+    (let ((cite-key nil))
+      (with-temp-buffer
+        (insert-file-contents file)
+        (goto-char (point-min))
+        (when (re-search-forward "\\[cite:@\\([^]]+\\)\\]" nil t)
+          (setq cite-key (match-string 1))))
+      (if cite-key
+          (if-let ((files (citar-get-files (list cite-key))))
+              (funcall citar-file-open-function (car files))
+            (message "No PDF found for cite key: %s" cite-key))
+        (message "No [cite:@key] found in %s" (file-name-nondirectory file)))))
+  (define-key embark-file-map (kbd "P") #'kp/embark-open-note-pdf))
 
-    ;; View exported file helper
-    (defun org-view-output-file (&optional org-file-path)
-      "Visit the first output file found for the current org file."
-      (interactive)
-      (let* ((org-file-path (or org-file-path (buffer-file-name) ""))
-             (dir (file-name-directory org-file-path))
-             (basename (file-name-base org-file-path))
-             (output-file nil)
-             (extensions '("pdf" "md" "rst" "txt" "tex" "html"))
-             (external '("html")))
-        (dolist (ext extensions)
-          (unless output-file
-            (when (file-exists-p (concat dir basename "." ext))
-              (setq output-file (concat dir basename "." ext)))))
-        (if output-file
-            (if (member (file-name-extension output-file) external)
-                (browse-url-xdg-open output-file)
-              (pop-to-buffer (or (find-buffer-visiting output-file)
-                                 (find-file-noselect output-file))))
-          (message "No exported file found"))))
-
-    ;; Super key for consult-denote
-    (global-set-key (kbd "s-n") #'consult-denote-find)))
+;; Super key for consult-denote
+(global-set-key (kbd "s-n") #'consult-denote-find)
 
 (provide 'init-org)

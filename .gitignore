@@ -26,6 +26,8 @@ flycheck_*.el
 /smex-items
 /tramp
 /transient/
+/custom.el
+/recentf
 /var/
 /.local*/
 

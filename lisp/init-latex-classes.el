@@ -134,6 +134,7 @@
                              ("boxtimes" "\\\\checkboxChecked")
                              (_ (substring fullmatch 9 -3))) "]"))
      text)))
-(add-to-list 'org-export-filter-item-functions #'kp/org-export-latex-fancy-item-checkboxes)
+(with-eval-after-load 'ox
+  (add-to-list 'org-export-filter-item-functions #'kp/org-export-latex-fancy-item-checkboxes))
 
 (provide 'init-latex-classes)
