@@ -10,5 +10,6 @@
 (require 'init-tools)
 (require 'init-languages)
 (require 'init-org)
+(require 'init-latex-classes)
 
 (provide 'post-init)
