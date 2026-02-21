@@ -28,6 +28,7 @@ flycheck_*.el
 /transient/
 /custom.el
 /recentf
+/history
 /var/
 /.local*/
 
