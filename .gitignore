@@ -30,6 +30,7 @@ flycheck_*.el
 /.local*/
 
 # Doom Emacs leftovers (remove after Task 10 cleanup)
+# TODO: /lisp/packages.el and /lisp/init.el entries may shadow future user files
 /.cask/
 /.doom
 /.github/
@@ -54,3 +55,4 @@ flycheck_*.el
 # Hidden files (except gitignore)
 .*
 !.gitignore
+!.gitkeep
