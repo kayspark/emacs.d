@@ -7,5 +7,6 @@
 (require 'init-evil)
 (require 'init-completion)
 (require 'init-ui)
+(require 'init-tools)
 
 (provide 'post-init)
