@@ -5,5 +5,6 @@
 
 ;; Core
 (require 'init-evil)
+(require 'init-completion)
 
 (provide 'post-init)
