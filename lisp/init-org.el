@@ -174,7 +174,7 @@
   (setq denote-directory "~/org/notes/"
         denote-file-type 'org
         denote-infer-keywords t
-        denote-known-keywords '("document" "doom" "dotfiles" "emacs" "macos"
+        denote-known-keywords '("document" "dotfiles" "emacs" "macos"
                                 "macports" "microsoft" "reference" "security"
                                 "terminfo" "tmux" "wezterm")
         denote-prompts '(title keywords))
