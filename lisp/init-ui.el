@@ -79,6 +79,7 @@
 (setq display-line-numbers-type 'relative
       make-backup-files nil
       confirm-kill-emacs nil)
+(global-display-line-numbers-mode 1)
 
 (setq-default fill-column 120
               sentence-end-double-space nil

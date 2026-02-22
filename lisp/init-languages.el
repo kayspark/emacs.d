@@ -51,14 +51,14 @@
 (add-hook 'java-ts-mode-hook #'kp/eglot-ensure-safe)
 
 ;; --- LaTeX ---
-(use-package auctex
-  :defer t
+(use-package tex
+  :ensure auctex
   :hook (LaTeX-mode . kp/eglot-ensure-safe)
   :hook (LaTeX-mode . turn-on-reftex)
   :hook (LaTeX-mode . auto-fill-mode)
+  :hook (LaTeX-mode . TeX-PDF-mode)
   :config
   (setq-default TeX-engine 'xetex
-                TeX-PDF-mode t
                 TeX-master t)
   (setq TeX-parse-self t
         TeX-auto-save t
@@ -73,11 +73,10 @@
         reftex-save-parse-info t
         reftex-use-multiple-selection-buffers t)
   (setq TeX-view-program-list
-        '(("PDF Tools" TeX-pdf-tools-sync-view)
-          ("Skim" "/Applications/Skim.app/Contents/SharedSupport/displayline -r -b %n %o %b")
+        '(("Skim" "/Applications/Skim.app/Contents/SharedSupport/displayline -r -b %n %o %b")
           ("Preview" "/usr/bin/open -a Preview.app %o")))
   (setq TeX-view-program-selection
-        '((output-dvi "Skim") (output-pdf "PDF Tools") (output-html "open")))
+        '((output-pdf "Preview") (output-dvi "Skim") (output-html "open")))
   (add-to-list 'TeX-command-list '("XeLaTeX" "%`xelatex%(mode)%' %(extraopts) %t" TeX-run-TeX nil t))
   (add-hook 'TeX-after-compilation-finished-functions #'TeX-revert-document-buffer))
 

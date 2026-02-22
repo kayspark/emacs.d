@@ -1,0 +1,340 @@
+#+TITLE: Emacs Configuration — minimal-emacs.d
+#+AUTHOR: kaypark
+#+OPTIONS: toc:2 num:t
+
+* Overview
+
+Modular Emacs configuration built on [[https://github.com/jamescherti/minimal-emacs.d][minimal-emacs.d]] (v1.3.1) by James Cherti.
+Evil-based editing with SPC leader keys, 47 packages across 7 modules, ~1,300 lines of custom config.
+
+Migrated from Doom Emacs for full control over configuration without framework abstractions.
+
+| Emacs   | >= 29.1 (tested on 30.2)                      |
+| OS      | macOS (Intel); should work on Linux            |
+| Terminal| WezTerm + tmux (Super key decoding included)   |
+| Startup | ~0.7s batch, ~2s GUI, ~33s daemon (all packages eager) |
+
+* Prerequisites
+
+- Emacs 29.1 or later (native-comp recommended)
+- ~git~ for package management (ELPA/MELPA, fetched on first run)
+- ~xelatex~ + ~latexmk~ for LaTeX and Org PDF export
+- ~enchant~ (v2) + dictionaries for spell checking (jinx)
+- ~ripgrep~ (~rg~) and ~fd~ for search (consult integration)
+- Tree-sitter support built-in from Emacs 29+; grammars auto-installed on demand
+
+* Installation
+
+#+begin_src bash
+# Clone
+git clone https://github.com/kayspark/emacs.d ~/.config/emacs
+
+# First run — packages install automatically via use-package
+emacs
+#+end_src
+
+For daemon mode:
+
+#+begin_src bash
+emacs --daemon
+emacsclient -c     # GUI frame
+emacsclient -nw    # terminal frame
+#+end_src
+
+The framework files (~early-init.el~, ~init.el~) should not be modified directly.
+User configuration goes in ~pre-early-init.el~, ~post-init.el~, and ~lisp/*.el~.
+
+* File Structure
+
+#+begin_example
+~/.config/emacs/
+├── early-init.el            # minimal-emacs.d bootstrap (DO NOT EDIT)
+├── init.el                  # Package setup, use-package (DO NOT EDIT)
+├── pre-early-init.el        # Frame defaults, UI features (user hook)
+├── post-init.el             # Module loader + terminal Super key decoding
+├── custom.el                # Customize-set-variables (auto-generated)
+└── lisp/
+    ├── init-evil.el         # Evil + general.el + which-key
+    ├── init-completion.el   # Vertico + corfu + consult + embark
+    ├── init-ui.el           # Theme, fonts, modeline, editor defaults
+    ├── init-tools.el        # Magit, eglot, treesit, formatting, spell
+    ├── init-languages.el    # Python, Java, LaTeX, Rust, R, SQL
+    ├── init-org.el          # Org-mode, citations, denote, babel
+    └── init-latex-classes.el  # LaTeX export class definitions
+#+end_example
+
+* Module Reference
+
+** ~init-evil.el~ — Evil Mode
+
+Vim keybindings with SPC leader via general.el. ~C-u~ / ~C-d~ half-page scroll enabled.
+~evil-want-C-i-jump~ set to ~nil~ to free TAB for ~org-cycle~ in terminal.
+
+*Packages:* evil, evil-collection, general, which-key
+
+** ~init-completion.el~ — Completion
+
+Minibuffer: vertico + orderless (flex matching) + marginalia (annotations).
+In-buffer: corfu (auto-popup) + cape (dabbrev, file).
+Search: consult (ripgrep, fd, line, imenu, outline, agenda).
+Actions: embark (contextual actions on candidates).
+
+*Packages:* vertico, orderless, marginalia, corfu, cape, consult, consult-dir,
+embark, embark-consult, nerd-icons-completion, nerd-icons-corfu
+
+** ~init-ui.el~ — UI & Theme
+
+Theme: ef-themes (~ef-dream~ dark / ~ef-elea-dark~ alternate).
+Fonts: Iosevka Nerd Font Mono (base) + Paperlogy (Korean hangul).
+Modeline: doom-modeline. Git gutters: diff-hl. Undo tree: vundo.
+Relative line numbers enabled globally.
+
+*Packages:* ef-themes, spacious-padding, doom-modeline, diff-hl, hl-todo, vundo, ws-butler
+
+** ~init-tools.el~ — Dev Tools
+
+Git: magit (status, log, blame). Diff: ediff (side-by-side, window restore).
+LSP: eglot (built-in) with texlab (LaTeX), sqls (SQL).
+Tree-sitter: treesit-auto (grammar auto-install). Direnv: envrc.
+Formatting: apheleia (async, sqlfluff for Oracle SQL).
+Spell: jinx (enchant backend). PDF: pdf-tools.
+
+*Packages:* magit, treesit-auto, envrc, apheleia, jinx, editorconfig,
+pdf-tools, nerd-icons-dired, vundo, ws-butler
+
+** ~init-languages.el~ — Languages
+
+Python: eglot + flymake-ruff.
+Java: jdtls via eglot (reuses Neovim Mason install), JDK 8/11/21 (Temurin).
+LaTeX: AUCTeX (~tex~) with xetex engine + PDF mode, cdlatex (snippets), laas (auto-subscript).
+Also: Rust (rustic), R, C, SQL, Markdown.
+
+*Packages:* tex (AUCTeX), cdlatex, laas, flymake-ruff, rustic, markdown-mode
+
+** ~init-org.el~ — Org Mode
+
+TODO states: PLANNED / TODO / PROG / REVIEW / DONE / CANCEL (with color faces).
+Agenda, citations (citar + citar-embark), notes (denote + consult-denote),
+PDF annotations (org-noter), image paste (org-download), code export (engrave-faces).
+Babel: Python, SQLite, ditaa, LaTeX.
+
+*Packages:* org-modern, citar, citar-embark, org-noter, denote,
+consult-denote, org-download, engrave-faces, mixed-pitch
+
+** ~init-latex-classes.el~ — LaTeX Classes
+
+Org-export class definitions for custom document classes (nepes-article, nepes-beamer).
+XeLaTeX with Korean font support: Paperlogy (sans), Noto Serif KR (serif),
+NanumGothicCoding (mono), Times New Roman / Arial (English).
+Pure config — no packages.
+
+* Dependencies
+
+** Minimal Setup
+
+For basic Evil + completion + UI editing (no LaTeX, no LSP, no spell check):
+
+#+begin_src bash
+# macOS (MacPorts)
+port install bash coreutils ripgrep fd
+#+end_src
+
+** Full Setup
+
+#+begin_src bash
+# macOS (MacPorts)
+port install bash coreutils ripgrep fd enchant2 hunspell-en \
+  texlive texlab latexmk python313 uv
+#+end_src
+
+** Dependency Reference
+
+*** Core
+
+| Tool           | Purpose            | Required?  | Install                    |
+|----------------+--------------------+------------+----------------------------|
+| bash           | Shell interpreter  | Required   | ~port install bash~        |
+| gls (GNU ls)   | Dired listing      | Required   | ~port install coreutils~   |
+
+*** Language Servers
+
+| Server  | Mode  | Required?        | Install                                              |
+|---------+-------+------------------+------------------------------------------------------|
+| texlab  | LaTeX | Required (LaTeX) | ~port install texlab~                                |
+| jdtls   | Java  | Required (Java)  | via Mason (~nvim~) or manual                         |
+| sqls    | SQL   | Required (SQL)   | ~go install github.com/sqls-server/sqls@latest~      |
+| R       | R     | Required (R)     | ~install.packages("languageserver")~ in R            |
+
+*** TeX
+
+| Tool    | Purpose            | Required?          | Install                  |
+|---------+--------------------+--------------------+--------------------------|
+| xelatex | LaTeX compiler     | Required (LaTeX)   | ~port install texlive~   |
+| latexmk | Build automation   | Required (Org PDF) | ~port install latexmk~   |
+
+*** Spell Check
+
+| Tool           | Purpose                    | Required? | Install                              |
+|----------------+----------------------------+-----------+--------------------------------------|
+| enchant2       | Spell backend (jinx)       | Optional  | ~port install enchant2~              |
+| hunspell dicts | Dictionaries (en_US, ko)   | Optional  | ~port install hunspell-en hunspell-ko~ |
+
+*** Search
+
+| Tool         | Purpose          | Required?   | Install                  |
+|--------------+------------------+-------------+--------------------------|
+| ripgrep (rg) | consult-ripgrep  | Recommended | ~port install ripgrep~   |
+| fd           | consult-fd       | Recommended | ~port install fd~        |
+
+*** Tree-sitter
+
+| Tool                  | Purpose              | Required? | Install                              |
+|-----------------------+----------------------+-----------+--------------------------------------|
+| tree-sitter grammars  | Syntax highlighting  | Optional  | Auto-installed by treesit-auto       |
+
+Grammars are installed on first use when ~treesit-auto-install~ is set to ~prompt~.
+
+*** Python
+
+| Tool    | Purpose              | Required?        | Install                    |
+|---------+----------------------+------------------+----------------------------|
+| python3 | Python mode + babel  | Required (Python)| ~port install python313~   |
+| uv      | Venv management      | Recommended      | ~port install uv~          |
+
+*** Java
+
+| Tool                | Purpose          | Required?      | Install                                |
+|---------------------+------------------+----------------+----------------------------------------|
+| OpenJDK 8 (Temurin) | Default runtime  | Required (Java)| ~port install openjdk8-temurin~        |
+| OpenJDK 11/21       | Alt runtimes     | Optional       | ~port install openjdk11-temurin~       |
+| jdtls               | Java LSP         | Required (Java)| via Mason or manual install            |
+
+*** Fonts
+
+| Font                   | Usage              | Source                          |
+|------------------------+--------------------+---------------------------------|
+| Iosevka Nerd Font Mono | Base monospace     | nerdfonts.com                   |
+| Paperlogy              | Korean sans-serif  | github.com/pjhnum7/Paperlogy   |
+| NanumGothicCoding      | Korean monospace   | ~port install NanumGothicCoding~ |
+| Noto Serif KR          | Korean serif       | Google Fonts                    |
+| Symbols Nerd Font      | Icons/symbols      | nerdfonts.com                   |
+| Apple Color Emoji      | Emoji              | Built-in (macOS)                |
+
+Fonts are only loaded in GUI frames. Terminal Emacs uses the terminal emulator font.
+
+*** PDF Viewers
+
+| Application  | Purpose            | Required?         | Source               |
+|--------------+--------------------+-------------------+----------------------|
+| Preview.app  | Default PDF viewer | Built-in (macOS)  | ---                  |
+| Skim         | PDF sync viewer    | Optional          | skim-app.sourceforge.io |
+| pdf-tools    | In-Emacs viewer    | Optional          | MELPA (auto-installed) |
+
+* Key Bindings
+
+** Leader Keys (SPC)
+
+| Key       | Action                        |
+|-----------+-------------------------------|
+| ~SPC SPC~ | M-x (execute-extended-command)|
+| ~SPC .~   | Find file                     |
+| ~SPC ,~   | Switch buffer                 |
+| ~SPC b d~ | Kill buffer                   |
+| ~SPC b s~ | Save buffer                   |
+| ~SPC f f~ | Find file                     |
+| ~SPC f r~ | Recent files                  |
+| ~SPC f s~ | Save file                     |
+| ~SPC g g~ | Magit status                  |
+| ~SPC g l~ | Git log                       |
+| ~SPC g b~ | Git blame                     |
+| ~SPC h f~ | Describe function             |
+| ~SPC h v~ | Describe variable             |
+| ~SPC h k~ | Describe key                  |
+| ~SPC p p~ | Switch project                |
+| ~SPC p f~ | Project find file             |
+| ~SPC p s~ | Project search (ripgrep)      |
+| ~SPC s s~ | Search line (consult)         |
+| ~SPC s p~ | Search project (ripgrep)      |
+| ~SPC s i~ | Search imenu                  |
+| ~SPC t l~ | Toggle line numbers           |
+| ~SPC t f~ | Toggle word wrap              |
+| ~SPC w s~ | Split below                   |
+| ~SPC w v~ | Split right                   |
+| ~SPC w d~ | Delete window                 |
+| ~SPC w m~ | Maximize window               |
+
+** Super Keys (GUI & Terminal)
+
+| Key       | Action              |
+|-----------+---------------------|
+| ~s-h/j/k/l~ | Window navigation|
+| ~s-0~     | Delete window       |
+| ~s-+/-~   | Resize height       |
+| ~s->/<~   | Resize width        |
+| ~s-a~     | Org agenda          |
+| ~s-b~     | Switch buffer       |
+| ~s-d~     | Consult dir         |
+| ~s-f~     | Find file (fd)      |
+| ~s-g~     | Git grep            |
+| ~s-i~     | Imenu               |
+| ~s-o~     | Outline             |
+| ~s-r~     | Ripgrep             |
+| ~s-m~     | Marks               |
+| ~s-;~     | Embark act          |
+| ~s-q~     | Flymake diagnostics |
+
+Super keys work in terminal via WezTerm CSI u-encoding.
+See ~post-init.el~ for the decode map.
+
+** LaTeX (AUCTeX)
+
+| Key       | Action                              |
+|-----------+-------------------------------------|
+| ~C-c C-a~ | Run all (compile until PDF ready)   |
+| ~C-c C-c~ | Run next command (LaTeX, View, ...) |
+| ~C-c C-v~ | View PDF                            |
+
+* Known Issues
+
+- ~evil-want-C-i-jump~ set to ~nil~: frees TAB for ~org-cycle~ in terminal, but loses ~C-i~ jump-forward.
+- Daemon startup ~33s: all packages are eager-loaded for reliable daemon operation.
+- ~TeX-master~ prompts on first open of ~.tex~ files (set to ~t~ = self by default).
+- ~kp/eglot-ensure-safe~ guards eglot: skips LSP start if no GUI frame exists (daemon safety).
+- ~pdf-tools~ does not work in terminal Emacs; falls back to ~Preview.app~ for PDF viewing.
+
+* Testing
+
+** Batch Startup
+
+#+begin_src bash
+emacs --batch -l ~/.config/emacs/early-init.el \
+  -l ~/.config/emacs/init.el \
+  --eval '(load-file "~/.config/emacs/post-init.el")' 2>&1
+#+end_src
+
+** LaTeX Export (with nepes-latex templates)
+
+#+begin_src bash
+cd ~/workspace/nepes-latex-template
+emacs --batch -l test-export.el
+#+end_src
+
+This exports 7 org/tex files (article dark/light/report, beamer dark/light, size-control variants).
+
+** Verify AUCTeX
+
+#+begin_src bash
+emacsclient -e '(with-current-buffer (find-file-noselect "/tmp/test.tex")
+  (list major-mode (bound-and-true-p TeX-PDF-mode) TeX-engine))'
+# Expected: (LaTeX-mode t xetex)
+#+end_src
+
+* Credits
+
+- [[https://github.com/jamescherti/minimal-emacs.d][minimal-emacs.d]] by James Cherti --- base framework (v1.3.1, GPL-3.0+)
+- [[https://github.com/doomemacs/doomemacs][Doom Emacs]] --- prior configuration, keybinding inspiration
+- Evil + general.el + evil-collection ecosystem
+
+** License
+
+GPL-3.0-or-later (same as minimal-emacs.d).
