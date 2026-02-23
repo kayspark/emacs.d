@@ -76,7 +76,9 @@
 (use-package jinx
   :defer t
   :hook (text-mode . jinx-mode)
-  :bind ([remap ispell-word] . jinx-correct))
+  :bind ([remap ispell-word] . jinx-correct)
+  :config
+  (setq jinx-languages "en_US ko_KR"))
 
 ;; --- Vundo (visual undo) ---
 (use-package vundo

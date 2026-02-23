@@ -176,8 +176,22 @@ port install bash coreutils ripgrep fd enchant2 hunspell-en \
 
 | Tool           | Purpose                    | Required? | Install                              |
 |----------------+----------------------------+-----------+--------------------------------------|
-| enchant2       | Spell backend (jinx)       | Optional  | ~port install enchant2~              |
+| enchant2       | Spell backend (jinx)       | Optional  | ~port install enchant2 +hunspell~    |
 | hunspell dicts | Dictionaries (en_US, ko)   | Optional  | ~port install hunspell-en hunspell-ko~ |
+
+Jinx uses enchant2 as its backend. The ~+hunspell~ variant is required for named
+dictionary lookup (e.g. ~ko_KR~). The default ~+applespell~ variant handles Korean
+transparently but doesn't advertise ~ko_KR~ as a dictionary name.
+
+Dictionary files (~.aff~ / ~.dic~) must be in ~/opt/local/share/hunspell/~.
+If installed elsewhere (e.g. =~/Library/Spelling/=), symlink them:
+
+#+begin_src shell :tangle no
+sudo ln -s ~/Library/Spelling/ko_KR.{aff,dic} /opt/local/share/hunspell/
+sudo ln -s ~/Library/Spelling/en_US.{aff,dic} /opt/local/share/hunspell/
+#+end_src
+
+Languages configured in ~init-tools.el~: ~jinx-languages~ = ~"en_US ko_KR"~.
 
 *** Search
 
