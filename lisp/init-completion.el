@@ -40,14 +40,13 @@
   :defer t
   :bind (("s-a" . consult-org-agenda)
          ("s-b" . consult-buffer)
-         ("s-c" . consult-flymake)
          ("s-d" . consult-dir)
-         ("s-f" . consult-fd)
          ("s-g" . consult-git-grep)
-         ("s-i" . consult-imenu)
          ("s-o" . consult-outline)
          ("s-r" . consult-ripgrep)
-         ("s-m" . consult-mark)))
+         ("s-D" . consult-flymake)
+         ("s-F" . consult-fd)
+         ("s-M" . consult-mark)))
 
 (use-package consult-dir
   :after consult)

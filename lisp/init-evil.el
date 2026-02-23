@@ -126,9 +126,16 @@
                   ("\e[27;8;72~"  . "s-H") ("\e[27;8;74~"  . "s-J")
                   ("\e[27;8;75~"  . "s-K") ("\e[27;8;76~"  . "s-L")
                   ("\e[27;8;48~"  . "s-0") ("\e[27;8;97~"  . "s-a")
-                  ("\e[27;8;59~"  . "s-;") ("\e[27;8;113~" . "s-q")
+                  ("\e[27;8;98~"  . "s-b") ("\e[27;8;100~" . "s-d")
+                  ("\e[27;8;101~" . "s-e") ("\e[27;8;103~" . "s-g")
+                  ("\e[27;8;111~" . "s-o") ("\e[27;8;114~" . "s-r")
+                  ("\e[27;8;59~"  . "s-;") ("\e[27;8;39~"  . "s-'")
+                  ("\e[27;8;113~" . "s-q")
                   ("\e[27;8;43~"  . "s-+") ("\e[27;8;45~"  . "s--")
-                  ("\e[27;8;62~"  . "s->") ("\e[27;8;60~"  . "s-<")))
+                  ("\e[27;8;62~"  . "s->") ("\e[27;8;60~"  . "s-<")
+                  ("\e[27;8;67~"  . "s-C") ("\e[27;8;68~"  . "s-D")
+                  ("\e[27;8;69~"  . "s-E") ("\e[27;8;70~"  . "s-F")
+                  ("\e[27;8;77~"  . "s-M")))
     (define-key input-decode-map (car pair) (kbd (cdr pair)))))
 
 ;; Super key window management
@@ -136,6 +143,10 @@
 (global-set-key (kbd "s-j") 'evil-window-down)
 (global-set-key (kbd "s-k") 'evil-window-up)
 (global-set-key (kbd "s-l") 'evil-window-right)
+(global-set-key (kbd "s-H") 'windmove-swap-states-left)
+(global-set-key (kbd "s-J") 'windmove-swap-states-down)
+(global-set-key (kbd "s-K") 'windmove-swap-states-up)
+(global-set-key (kbd "s-L") 'windmove-swap-states-right)
 (global-set-key (kbd "s-0") 'delete-window)
 
 ;; Window resize
