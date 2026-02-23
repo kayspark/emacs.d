@@ -6,3 +6,8 @@
 
 ;; Keep menu bar disabled, enable context menus
 (setq minimal-emacs-ui-features '(context-menu))
+
+;; Corporate proxy CA bundle for GnuTLS (Emacs ignores SSL_CERT_FILE)
+(with-eval-after-load 'gnutls
+  (add-to-list 'gnutls-trustfiles
+               (expand-file-name "~/.config/ssl/ca-bundle.pem")))

@@ -182,7 +182,7 @@
   (denote-rename-buffer-mode 1))
 
 (use-package consult-denote
-  :after denote
+  :commands (consult-denote-find consult-denote-grep)
   :config
   (consult-denote-mode 1))
 
@@ -288,9 +288,10 @@
 ;; PDF noter local leader (deferred until pdf-tools loads)
 (with-eval-after-load 'pdf-tools
   (general-define-key
-   :states '(normal visual motion)
+   :states 'normal
    :keymaps 'pdf-view-mode-map
    :prefix "SPC m"
+   :non-normal-prefix "M-SPC m"
    "" '(:ignore t :wk "local")
    "n" '(org-noter :wk "open noter")))
 
@@ -338,8 +339,5 @@
             (message "No PDF found for cite key: %s" cite-key))
         (message "No [cite:@key] found in %s" (file-name-nondirectory file)))))
   (define-key embark-file-map (kbd "P") #'kp/embark-open-note-pdf))
-
-;; Super key for consult-denote
-(global-set-key (kbd "s-n") #'consult-denote-find)
 
 (provide 'init-org)
