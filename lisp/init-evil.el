@@ -101,7 +101,23 @@
     "wd" '(delete-window :wk "delete")
     "ws" '(split-window-below :wk "split below")
     "wv" '(split-window-right :wk "split right")
-    "wm" '(delete-other-windows :wk "maximize")))
+    "wm" '(delete-other-windows :wk "maximize"))
+
+  ;; Clipboard (system)
+  (kp/leader-def
+    "y" '(:ignore t :wk "clipboard"))
+  (general-define-key
+   :states 'visual
+   :keymaps 'override
+   :prefix "SPC"
+   "y" '("clipboard yank" . (lambda () (interactive) (evil-use-register ?+) (call-interactively #'evil-yank))))
+  (general-define-key
+   :states 'normal
+   :keymaps 'override
+   :prefix "SPC"
+   "y"  '(:ignore t :wk "clipboard")
+   "yp" '("paste after" . (lambda () (interactive) (evil-paste-after 1 ?+)))
+   "yP" '("paste before" . (lambda () (interactive) (evil-paste-before 1 ?+)))))
 
 ;; Which-key — shows available keybindings
 (use-package which-key
