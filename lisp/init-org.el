@@ -179,7 +179,25 @@
                                 "terminfo" "tmux" "wezterm")
         denote-prompts '(title keywords))
   :config
-  (denote-rename-buffer-mode 1))
+  (denote-rename-buffer-mode 1)
+
+  (defun kp/denote-paper-note ()
+    "Create a new denote note in the papers silo."
+    (interactive)
+    (let ((denote-directory "~/org/papers/notes/"))
+      (call-interactively #'denote)))
+
+  (defun kp/denote-paper-find ()
+    "Find or grep notes in the papers silo."
+    (interactive)
+    (let ((denote-directory "~/org/papers/notes/"))
+      (call-interactively #'consult-denote-find)))
+
+  (defun kp/denote-paper-grep ()
+    "Grep notes in the papers silo."
+    (interactive)
+    (let ((denote-directory "~/org/papers/notes/"))
+      (call-interactively #'consult-denote-grep))))
 
 (use-package consult-denote
   :commands (consult-denote-find consult-denote-grep)
@@ -250,7 +268,12 @@
     "nb" '(denote-backlinks :wk "backlinks")
     "nr" '(denote-rename-file :wk "rename")
     "ns" '(consult-denote-grep :wk "grep notes")
-    "nF" '(consult-denote-find :wk "find note")))
+    "nF" '(consult-denote-find :wk "find note")
+    ;; Paper notes silo (~/org/papers/notes/)
+    "np" '(:ignore t :wk "paper notes")
+    "npn" '(kp/denote-paper-note :wk "new paper note")
+    "npf" '(kp/denote-paper-find :wk "find paper note")
+    "nps" '(kp/denote-paper-grep :wk "grep paper notes")))
 
 ;; Org-mode local leader bindings (deferred until org-mode loads)
 (with-eval-after-load 'org
