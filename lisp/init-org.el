@@ -182,6 +182,7 @@
   (denote-rename-buffer-mode 1))
 
 ;; Paper notes silo functions (standalone, trigger autoloads)
+(defvar denote-directory)  ; suppress lexical-dynamic warning for let-binding
 (defun kp/denote-paper-note ()
   "Create a new denote note in the papers silo."
   (interactive)
