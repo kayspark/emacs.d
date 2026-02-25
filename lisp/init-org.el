@@ -179,25 +179,26 @@
                                 "terminfo" "tmux" "wezterm")
         denote-prompts '(title keywords))
   :config
-  (denote-rename-buffer-mode 1)
+  (denote-rename-buffer-mode 1))
 
-  (defun kp/denote-paper-note ()
-    "Create a new denote note in the papers silo."
-    (interactive)
-    (let ((denote-directory "~/org/papers/notes/"))
-      (call-interactively #'denote)))
+;; Paper notes silo functions (standalone, trigger autoloads)
+(defun kp/denote-paper-note ()
+  "Create a new denote note in the papers silo."
+  (interactive)
+  (let ((denote-directory "~/org/papers/notes/"))
+    (call-interactively #'denote)))
 
-  (defun kp/denote-paper-find ()
-    "Find or grep notes in the papers silo."
-    (interactive)
-    (let ((denote-directory "~/org/papers/notes/"))
-      (call-interactively #'consult-denote-find)))
+(defun kp/denote-paper-find ()
+  "Find notes in the papers silo."
+  (interactive)
+  (let ((denote-directory "~/org/papers/notes/"))
+    (call-interactively #'consult-denote-find)))
 
-  (defun kp/denote-paper-grep ()
-    "Grep notes in the papers silo."
-    (interactive)
-    (let ((denote-directory "~/org/papers/notes/"))
-      (call-interactively #'consult-denote-grep))))
+(defun kp/denote-paper-grep ()
+  "Grep notes in the papers silo."
+  (interactive)
+  (let ((denote-directory "~/org/papers/notes/"))
+    (call-interactively #'consult-denote-grep)))
 
 (use-package consult-denote
   :commands (consult-denote-find consult-denote-grep)
