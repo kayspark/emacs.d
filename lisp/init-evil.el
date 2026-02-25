@@ -154,15 +154,8 @@
                   ("\e[27;8;77~"  . "s-M")))
     (define-key input-decode-map (car pair) (kbd (cdr pair)))))
 
-;; Super key window management
-(global-set-key (kbd "s-h") 'evil-window-left)
-(global-set-key (kbd "s-j") 'evil-window-down)
-(global-set-key (kbd "s-k") 'evil-window-up)
-(global-set-key (kbd "s-l") 'evil-window-right)
-(global-set-key (kbd "s-H") 'windmove-swap-states-left)
-(global-set-key (kbd "s-J") 'windmove-swap-states-down)
-(global-set-key (kbd "s-K") 'windmove-swap-states-up)
-(global-set-key (kbd "s-L") 'windmove-swap-states-right)
+;; Window navigation: use C-w h/j/k/l (Evil default) exclusively.
+;; Super keys (s-h/j/k/l, s-H/J/K/L) freed for other purposes.
 (global-set-key (kbd "s-0") 'delete-window)
 
 ;; Window zoom toggle (matches tmux C-b z, nvim C-w z)
