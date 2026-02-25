@@ -165,6 +165,22 @@
 (global-set-key (kbd "s-L") 'windmove-swap-states-right)
 (global-set-key (kbd "s-0") 'delete-window)
 
+;; Window zoom toggle (matches tmux C-b z, nvim C-w z)
+(defvar kp/window-zoom-config nil "Saved window config for zoom toggle.")
+(defun kp/window-zoom-toggle ()
+  "Toggle zoom on current window (like tmux C-b z)."
+  (interactive)
+  (if (and kp/window-zoom-config (> (length (window-list)) 1))
+      (progn (set-window-configuration kp/window-zoom-config)
+             (setq kp/window-zoom-config nil))
+    (if (> (length (window-list)) 1)
+        (progn (setq kp/window-zoom-config (current-window-configuration))
+               (delete-other-windows))
+      (when kp/window-zoom-config
+        (set-window-configuration kp/window-zoom-config)
+        (setq kp/window-zoom-config nil)))))
+(define-key evil-window-map "z" #'kp/window-zoom-toggle)
+
 ;; Window resize
 (global-set-key (kbd "s-+") 'evil-window-increase-height)
 (global-set-key (kbd "s--") 'evil-window-decrease-height)
