@@ -98,7 +98,7 @@
       truncate-string-ellipsis "…"
       password-cache-expiry nil
       scroll-margin 2
-      insert-directory-program "/opt/local/bin/gls")
+      insert-directory-program (if (executable-find "gls") "gls" "ls"))
 
 ;; Deferred global modes
 (add-hook 'after-init-hook
@@ -145,8 +145,9 @@
 (tab-bar-mode 1)
 
 ;; --- Shell ---
-(setq shell-file-name "/opt/local/bin/bash"
-      explicit-shell-file-name "/opt/local/bin/bash")
+(let ((bash-path (or (executable-find "bash") "/bin/bash")))
+  (setq shell-file-name bash-path
+        explicit-shell-file-name bash-path))
 
 ;; --- Auth source ---
 (with-eval-after-load 'auth-source
