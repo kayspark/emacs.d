@@ -49,6 +49,8 @@
     ;; Buffers
     "b" '(:ignore t :wk "buffer")
     "bb" '(consult-buffer :wk "switch")
+    "bn" '(next-buffer :wk "next")
+    "bp" '(previous-buffer :wk "previous")
     "bd" '(kill-current-buffer :wk "kill")
     "bs" '(save-buffer :wk "save")
     "bS" '(save-some-buffers :wk "save all")
