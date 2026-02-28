@@ -144,7 +144,13 @@
 (setq tab-bar-show 1)
 (tab-bar-mode 1)
 
-;; --- Shell ---
+;; --- Shell environment (fix PATH for GUI / daemon) ---
+(use-package exec-path-from-shell
+  :when (or (daemonp) (memq window-system '(mac ns x)))
+  :demand t
+  :config
+  (exec-path-from-shell-initialize))
+
 (let ((bash-path (or (executable-find "bash") "/bin/bash")))
   (setq shell-file-name bash-path
         explicit-shell-file-name bash-path))
