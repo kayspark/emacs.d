@@ -259,9 +259,9 @@
 
 ;;; Frames and windows
 
-;; However, do not resize windows pixelwise, as this can cause crashes in some
-;; cases when resizing too many windows at once or rapidly.
-(setq window-resize-pixelwise nil)
+;; Pixel-wise resizing lets tiling WMs (AeroSpace) fill the frame exactly.
+(setq frame-resize-pixelwise t
+      window-resize-pixelwise t)
 
 (setq resize-mini-windows 'grow-only)
 
