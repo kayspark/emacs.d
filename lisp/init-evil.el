@@ -193,6 +193,8 @@
 ;; Heading navigation (org, markdown, outline)
 (with-eval-after-load 'org
   (evil-define-key 'normal org-mode-map
+    "]]" #'org-next-visible-heading
+    "[[" #'org-previous-visible-heading
     "]h" #'org-next-visible-heading
     "[h" #'org-previous-visible-heading
     "]s" #'org-forward-heading-same-level
@@ -201,6 +203,8 @@
 
 (with-eval-after-load 'markdown-mode
   (evil-define-key 'normal markdown-mode-map
+    "]]" #'markdown-next-heading
+    "[[" #'markdown-previous-heading
     "]h" #'markdown-next-heading
     "[h" #'markdown-previous-heading
     "]u" #'markdown-up-heading))
