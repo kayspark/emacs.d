@@ -189,4 +189,25 @@
 (global-set-key (kbd "s->") 'evil-window-increase-width)
 (global-set-key (kbd "s-<") 'evil-window-decrease-width)
 
+;; --- ] / [ bracket motions: unified navigation across all modes ---
+;; Heading navigation (org, markdown, outline)
+(with-eval-after-load 'org
+  (evil-define-key 'normal org-mode-map
+    "]h" #'org-next-visible-heading
+    "[h" #'org-previous-visible-heading
+    "]s" #'org-forward-heading-same-level
+    "[s" #'org-backward-heading-same-level
+    "]u" #'outline-up-heading))
+
+(with-eval-after-load 'markdown-mode
+  (evil-define-key 'normal markdown-mode-map
+    "]h" #'markdown-next-heading
+    "[h" #'markdown-previous-heading
+    "]u" #'markdown-up-heading))
+
+;; Function navigation (all programming modes via beginning/end-of-defun)
+(evil-define-key 'normal prog-mode-map
+  "]f" #'end-of-defun
+  "[f" #'beginning-of-defun)
+
 (provide 'init-evil)
