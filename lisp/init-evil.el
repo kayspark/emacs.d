@@ -157,13 +157,6 @@
         which-key-min-display-lines 3)
   (which-key-mode 1))
 
-;; Terminal cursor shape: block (normal), bar (insert), underline (replace)
-(use-package evil-terminal-cursor-changer
-  :unless (display-graphic-p)
-  :after evil
-  :config
-  (evil-terminal-cursor-changer-activate))
-
 ;; macOS modifier keys
 (setq mac-command-modifier       'super
       mac-option-modifier        'meta

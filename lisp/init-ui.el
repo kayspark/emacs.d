@@ -15,31 +15,19 @@
           (t . (variable-pitch 1.1)))
         ef-themes-to-toggle '(ef-dream ef-elea-dark)))
 
-(use-package spacious-padding
-  :defer t
-  :bind ("<f8>" . spacious-padding-mode)
-  :init
-  (setq spacious-padding-widths
-        '( :internal-border-width 15
-           :header-line-width 4
-           :mode-line-width 6
-           :tab-width 4
-           :right-divider-width 1
-           :scroll-bar-width 8
-           :left-fringe-width 20
-           :right-fringe-width 20))
-  (setq spacious-padding-subtle-mode-line nil))
+;; Built-in padding (replaces spacious-padding package)
+(setq-default left-fringe-width 20
+              right-fringe-width 20)
+(modify-all-frames-parameters '((internal-border-width . 15)
+                                (right-divider-width . 1)))
 
-;; Daemon-safe theme + spacious-padding activation
-(defun kp/setup-theme-and-padding ()
-  "Load theme and enable spacious-padding (GUI only)."
-  (load-theme 'ef-dream :no-confirm)
-  (when (display-graphic-p)
-    (spacious-padding-mode 1)))
+(defun kp/setup-theme ()
+  "Load theme."
+  (load-theme 'ef-dream :no-confirm))
 
 (if (daemonp)
-    (add-hook 'server-after-make-frame-hook #'kp/setup-theme-and-padding)
-  (add-hook 'after-init-hook #'kp/setup-theme-and-padding))
+    (add-hook 'server-after-make-frame-hook #'kp/setup-theme)
+  (add-hook 'after-init-hook #'kp/setup-theme))
 
 ;; --- Fonts ---
 (setq default-input-method "korean-hangul")
@@ -117,10 +105,12 @@
   (add-to-list 'savehist-additional-variables 'register-alist)
   (add-to-list 'savehist-additional-variables 'kill-ring))
 
-;; --- Hl-todo ---
-(use-package hl-todo
-  :defer t
-  :hook (prog-mode . hl-todo-mode))
+;; --- Highlight TODO/FIXME/HACK keywords (built-in font-lock) ---
+(defun kp/add-todo-keywords ()
+  "Highlight TODO/FIXME/HACK/NOTE keywords in comments."
+  (font-lock-add-keywords nil
+    '(("\\<\\(TODO\\|FIXME\\|HACK\\|NOTE\\|XXX\\):" 1 'warning prepend))))
+(add-hook 'prog-mode-hook #'kp/add-todo-keywords)
 
 ;; --- Diff-hl (vc gutter) ---
 (use-package diff-hl
@@ -128,17 +118,13 @@
   :hook ((prog-mode . diff-hl-mode)
          (magit-post-refresh . diff-hl-magit-post-refresh)))
 
-;; --- Pulsar (operation hints) ---
-(use-package pulsar
-  :defer t
-  :hook (after-init . pulsar-global-mode))
-
-;; --- Ace-window ---
-(use-package ace-window
-  :defer t
-  :bind ("M-o" . ace-window)
-  :config
-  (setq aw-dispatch-always t))
+;; --- Pulse on navigation (built-in pulse.el) ---
+(defun kp/pulse-line (&rest _)
+  "Briefly highlight current line."
+  (pulse-momentary-highlight-one-line (point)))
+(dolist (fn '(recenter-top-bottom scroll-up-command scroll-down-command
+              other-window windmove-do-window-select))
+  (advice-add fn :after #'kp/pulse-line))
 
 ;; --- Tab-bar (workspaces) ---
 (setq tab-bar-show 1)

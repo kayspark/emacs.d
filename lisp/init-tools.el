@@ -63,11 +63,8 @@
   (pdf-tools-install-noverify)
   (setq-default pdf-view-display-size 'fit-page))
 
-;; --- Editorconfig ---
-(use-package editorconfig
-  :demand t
-  :config
-  (editorconfig-mode 1))
+;; --- Editorconfig (built-in since Emacs 30) ---
+(editorconfig-mode 1)
 
 ;; --- Flymake (built-in, eglot uses it) ---
 
@@ -84,10 +81,8 @@
   :defer t
   :commands vundo)
 
-;; --- Ws-butler (trim trailing whitespace) ---
-(use-package ws-butler
-  :defer t
-  :hook (prog-mode . ws-butler-mode))
+;; --- Trim trailing whitespace (built-in) ---
+(add-hook 'before-save-hook #'delete-trailing-whitespace)
 
 ;; --- Dired ---
 (with-eval-after-load 'dired
