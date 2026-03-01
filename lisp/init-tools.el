@@ -70,7 +70,6 @@
   (editorconfig-mode 1))
 
 ;; --- Flymake (built-in, eglot uses it) ---
-(global-set-key (kbd "s-q") #'flymake-show-diagnostics-buffer)
 
 ;; --- Jinx (modern spell-checker) ---
 (use-package jinx

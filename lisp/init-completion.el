@@ -38,15 +38,9 @@
 ;; Consult — enhanced search/navigation commands
 (use-package consult
   :defer t
-  :bind (("s-a" . consult-org-agenda)
-         ("s-b" . consult-buffer)
-         ("s-d" . consult-dir)
-         ("s-g" . consult-git-grep)
-         ("s-o" . consult-outline)
-         ("s-r" . consult-ripgrep)
-         ("s-D" . consult-flymake)
-         ("s-F" . consult-fd)
-         ("s-M" . consult-mark)))
+  :commands (consult-org-agenda consult-buffer consult-dir consult-git-grep
+             consult-outline consult-ripgrep consult-flymake consult-fd
+             consult-mark consult-line consult-imenu consult-recent-file))
 
 (use-package consult-dir
   :after consult)
@@ -54,11 +48,7 @@
 ;; Embark — contextual actions on completion candidates
 (use-package embark
   :defer t
-  :bind (("s-;" . embark-act)
-         ("s-'" . embark-dwim)
-         ("s-C" . embark-collect)
-         ("s-e" . embark-export)
-         ("s-E" . embark-live))
+  :commands (embark-act embark-dwim embark-collect embark-export embark-live)
   :config
   (setq embark-quit-after-action nil
         embark-confirm-act-all nil))
