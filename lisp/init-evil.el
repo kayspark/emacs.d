@@ -206,8 +206,39 @@
     "]u" #'markdown-up-heading))
 
 ;; Function navigation (all programming modes via beginning/end-of-defun)
+;; Class navigation via treesit (covers python, java, typescript, rust, etc.)
+(defun kp/treesit-class-p (node)
+  "Return non-nil if NODE is a class-like definition."
+  (string-match-p
+   (rx (or "class_definition" "class_declaration"
+           "interface_declaration" "struct_item" "impl_item"
+           "enum_declaration" "enum_item"))
+   (treesit-node-type node)))
+
+(defun kp/next-class ()
+  "Jump to next class definition."
+  (interactive)
+  (if (treesit-parser-list)
+      (let ((node (treesit-search-forward
+                   (treesit-node-at (point)) #'kp/treesit-class-p)))
+        (if node (goto-char (treesit-node-start node))
+          (user-error "No next class")))
+    (user-error "No treesit parser in this buffer")))
+
+(defun kp/prev-class ()
+  "Jump to previous class definition."
+  (interactive)
+  (if (treesit-parser-list)
+      (let ((node (treesit-search-forward
+                   (treesit-node-at (point)) #'kp/treesit-class-p t)))
+        (if node (goto-char (treesit-node-start node))
+          (user-error "No previous class")))
+    (user-error "No treesit parser in this buffer")))
+
 (evil-define-key 'normal prog-mode-map
   "]f" #'end-of-defun
-  "[f" #'beginning-of-defun)
+  "[f" #'beginning-of-defun
+  "]c" #'kp/next-class
+  "[c" #'kp/prev-class)
 
 (provide 'init-evil)
