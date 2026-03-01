@@ -257,6 +257,9 @@
         mark-ring global-mark-ring       ; marks
         search-ring regexp-search-ring)) ; searches
 
+;;; Local variables — apply safe values only, never prompt (prevents daemon hang)
+(setq enable-local-variables :safe)
+
 ;;; Frames and windows
 
 ;; Pixel-wise resizing lets tiling WMs (AeroSpace) fill the frame exactly.
