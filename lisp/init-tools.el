@@ -84,6 +84,10 @@
 ;; --- Trim trailing whitespace (built-in) ---
 (add-hook 'before-save-hook #'delete-trailing-whitespace)
 
+;; --- Shell ---
+(with-eval-after-load 'shell
+  (define-key shell-mode-map (kbd "C-r") #'consult-history))
+
 ;; --- Dired ---
 (with-eval-after-load 'dired
   (setq dired-no-confirm t
