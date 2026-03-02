@@ -1,4 +1,5 @@
 # Emacs runtime / generated files
+/path-cache
 \#*
 *~
 *.*~

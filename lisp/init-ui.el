@@ -131,11 +131,17 @@
 (tab-bar-mode 1)
 
 ;; --- Shell environment (fix PATH for GUI / daemon) ---
-(use-package exec-path-from-shell
-  :when (or (daemonp) (memq window-system '(mac ns x)))
-  :demand t
-  :config
-  (exec-path-from-shell-initialize))
+;; Read cached PATH from file instead of spawning a full shell (saves ~5s).
+;; Cache is written by shell rc: echo "$PATH" > ~/.config/emacs/path-cache
+(let ((cache-file (expand-file-name "path-cache" user-emacs-directory)))
+  (when (and (or (daemonp) (memq window-system '(mac ns x)))
+             (file-exists-p cache-file))
+    (let ((cached-path (string-trim
+                        (with-temp-buffer
+                          (insert-file-contents cache-file)
+                          (buffer-string)))))
+      (setenv "PATH" cached-path)
+      (setq exec-path (append (parse-colon-path cached-path) (list exec-directory))))))
 
 (let ((bash-path (or (executable-find "bash") "/bin/bash")))
   (setq shell-file-name bash-path
@@ -156,13 +162,22 @@
             (unless (or (daemonp) (server-running-p))
               (server-start))))
 
-;; --- Daemon warm-up: pre-create hidden frame to trigger GUI init ---
+;; --- Daemon warm-up: pre-init macOS GUI so first emacsclient -c is instant ---
 ;; Without this, first emacsclient -c is slow (~3-5s) because macOS
-;; Cocoa stack + theme + fontsets all initialize on first frame.
+;; Cocoa stack + theme + fontsets all initialize on first GUI frame.
+;; server-after-make-frame-hook only fires for emacsclient, so we call
+;; the setup functions directly on the warm-up frame.
 (when (daemonp)
   (run-with-timer 3 nil
     (lambda ()
-      (let ((frame (make-frame '((visibility . nil) (width . 80) (height . 24)))))
-        (run-with-timer 1 nil #'delete-frame frame)))))
+      (unless (memq 'ns (mapcar #'framep (frame-list)))
+        (condition-case err
+            (let ((frame (make-frame '((window-system . ns)
+                                       (visibility . nil)))))
+              (with-selected-frame frame
+                (kp/setup-theme)
+                (kp/setup-fontsets))
+              (run-with-timer 2 nil #'delete-frame frame))
+          (error (message "Warm-up failed: %s" err)))))))
 
 (provide 'init-ui)
