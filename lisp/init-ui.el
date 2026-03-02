@@ -156,4 +156,13 @@
             (unless (or (daemonp) (server-running-p))
               (server-start))))
 
+;; --- Daemon warm-up: pre-create hidden frame to trigger GUI init ---
+;; Without this, first emacsclient -c is slow (~3-5s) because macOS
+;; Cocoa stack + theme + fontsets all initialize on first frame.
+(when (daemonp)
+  (run-with-timer 3 nil
+    (lambda ()
+      (let ((frame (make-frame '((visibility . nil) (width . 80) (height . 24)))))
+        (run-with-timer 1 nil #'delete-frame frame)))))
+
 (provide 'init-ui)
