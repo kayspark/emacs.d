@@ -56,16 +56,4 @@
 (use-package embark-consult
   :after (embark consult))
 
-;; Nerd icons for completion UIs
-(use-package nerd-icons-completion
-  :after marginalia
-  :config
-  (nerd-icons-completion-mode 1)
-  (add-hook 'marginalia-mode-hook #'nerd-icons-completion-marginalia-setup))
-
-(use-package nerd-icons-corfu
-  :after corfu
-  :config
-  (add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter))
-
 (provide 'init-completion)

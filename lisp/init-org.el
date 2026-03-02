@@ -44,11 +44,11 @@
   (setq org-priority-highest ?A
         org-priority-lowest ?E
         org-priority-faces
-        '((?A . 'nerd-icons-red)
-          (?B . 'nerd-icons-orange)
-          (?C . 'nerd-icons-yellow)
-          (?D . 'nerd-icons-green)
-          (?E . 'nerd-icons-blue)))
+        '((?A . error)
+          (?B . warning)
+          (?C . success)
+          (?D . font-lock-doc-face)
+          (?E . shadow)))
 
   (setq org-use-speed-commands
         (lambda ()
@@ -219,12 +219,20 @@
   :config
   (setq org-latex-listings 'engraved))
 
-;; --- Mixed-pitch ---
-(use-package mixed-pitch
-  :defer t
-  :hook (org-mode . mixed-pitch-mode)
-  :config
-  (setq mixed-pitch-variable-pitch-cursor nil))
+;; --- Mixed-pitch (built-in face remapping) ---
+;; Use variable-pitch for prose, keep fixed-pitch for code/tables
+(defun kp/mixed-pitch-mode ()
+  "Enable variable-pitch for text with fixed-pitch overrides for code."
+  (variable-pitch-mode 1)
+  (dolist (face '(org-block org-block-begin-line org-block-end-line
+                  org-code org-verbatim org-table org-formula
+                  org-meta-line org-document-info-keyword
+                  org-special-keyword org-property-value
+                  org-drawer org-column org-column-title
+                  line-number line-number-current-line))
+    (when (facep face)
+      (face-remap-add-relative face :inherit 'fixed-pitch))))
+(add-hook 'org-mode-hook #'kp/mixed-pitch-mode)
 
 ;; --- Org LaTeX export ---
 (with-eval-after-load 'ox-latex

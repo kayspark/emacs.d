@@ -148,8 +148,9 @@
    "yp" '("paste after" . (lambda () (interactive) (evil-paste-after 1 ?+)))
    "yP" '("paste before" . (lambda () (interactive) (evil-paste-before 1 ?+)))))
 
-;; Which-key — shows available keybindings
+;; Which-key — shows available keybindings (built-in since Emacs 30)
 (use-package which-key
+  :ensure nil
   :demand t
   :config
   (setq which-key-idle-delay 0.3

@@ -103,11 +103,6 @@
 
 (add-hook 'dired-mode-hook #'dired-hide-details-mode)
 (add-hook 'dired-mode-hook #'hl-line-mode)
-(add-hook 'dired-mode-hook #'nerd-icons-dired-mode)
-
-(use-package nerd-icons-dired
-  :defer t
-  :commands nerd-icons-dired-mode)
 
 ;; --- Isearch ---
 (with-eval-after-load 'isearch

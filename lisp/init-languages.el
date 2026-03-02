@@ -1,10 +1,6 @@
 ;;; init-languages.el --- Language configurations -*- lexical-binding: t; -*-
 
 ;; --- Python ---
-(use-package flymake-ruff
-  :defer t
-  :hook (eglot-managed-mode . flymake-ruff-load))
-
 (with-eval-after-load 'python
   (setq python-indent-offset 4
         python-shell-interpreter "python3"
