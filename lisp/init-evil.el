@@ -40,8 +40,10 @@
     :prefix "SPC m")
 
   ;; Top-level leader bindings
+  ;; Keybindings aligned with Neovim (LazyVim) where possible.
   (kp/leader-def
     "SPC" '(execute-extended-command :wk "M-x")
+    "/" '(consult-ripgrep :wk "grep project")   ; matches nvim SPC /
     ":" '(eval-expression :wk "eval")
     "." '(find-file :wk "find file")
     "," '(consult-buffer :wk "switch buffer")
@@ -56,10 +58,10 @@
     "bs" '(save-buffer :wk "save")
     "bS" '(save-some-buffers :wk "save all")
 
-    ;; Diagnostics
-    "d" '(:ignore t :wk "diagnostics")
-    "dd" '(consult-flymake :wk "flymake")
-    "dl" '(flymake-show-diagnostics-buffer :wk "list")
+    ;; Code (LSP) — matches nvim SPC c
+    "c" '(:ignore t :wk "code")
+    "ca" '(eglot-code-actions :wk "actions")
+    "cr" '(eglot-rename :wk "rename")
 
     ;; Embark
     "a" '(embark-act :wk "embark act")
@@ -103,23 +105,31 @@
     "pf" '(project-find-file :wk "find file")
     "ps" '(consult-ripgrep :wk "search")
 
-    ;; Search
+    ;; Search — aligned with nvim SPC s
     "s" '(:ignore t :wk "search")
-    "ss" '(consult-line :wk "line")
-    "sp" '(consult-ripgrep :wk "project")
-    "sr" '(consult-ripgrep :wk "ripgrep")
-    "sg" '(consult-git-grep :wk "git grep")
-    "si" '(consult-imenu :wk "imenu")
-    "so" '(consult-outline :wk "outline")
     "sb" '(consult-bookmark :wk "bookmark")
+    "sd" '(consult-flymake :wk "diagnostics")       ; was SPC dd
+    "sD" '(flymake-show-diagnostics-buffer :wk "buf diagnostics") ; was SPC dl
+    "sF" '(consult-fd :wk "fd find")
+    "sg" '(consult-ripgrep :wk "grep")              ; matches nvim SPC sg
+    "sG" '(consult-git-grep :wk "git grep")         ; was SPC sg
+    "si" '(consult-imenu :wk "imenu")
     "sm" '(consult-mark :wk "mark")
     "sM" '(consult-global-mark :wk "global mark")
-    "sF" '(consult-fd :wk "fd find")
+    "so" '(consult-outline :wk "outline")
+    "sr" '(project-query-replace-regexp :wk "search replace") ; matches nvim SPC sr
+    "ss" '(consult-line :wk "line")
+    "st" '(consult-ripgrep-todo :wk "todo")          ; matches nvim SPC st
 
     ;; Toggle
     "t" '(:ignore t :wk "toggle")
     "tf" '(visual-line-mode :wk "word wrap")
     "tl" '(display-line-numbers-mode :wk "line numbers")
+
+    ;; Diagnostics list — matches nvim SPC x
+    "x" '(:ignore t :wk "trouble/diagnostics")
+    "xx" '(consult-flymake :wk "diagnostics")
+    "xX" '(flymake-show-diagnostics-buffer :wk "buf diagnostics")
 
     ;; Quit
     "q" '(:ignore t :wk "quit")
@@ -168,6 +178,12 @@
   :after evil
   :config
   (evil-terminal-cursor-changer-activate))
+
+;; Search TODO/FIXME/HACK across project (matches nvim SPC st)
+(defun consult-ripgrep-todo ()
+  "Search for TODO/FIXME/HACK comments across project."
+  (interactive)
+  (consult-ripgrep nil "TODO|FIXME|HACK"))
 
 ;; macOS modifier keys
 (setq mac-command-modifier       'super
