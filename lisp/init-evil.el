@@ -52,6 +52,7 @@
     "bn" '(next-buffer :wk "next")
     "bp" '(previous-buffer :wk "previous")
     "bd" '(kill-current-buffer :wk "kill")
+    "bm" '(bookmark-set :wk "bookmark set")
     "bs" '(save-buffer :wk "save")
     "bS" '(save-some-buffers :wk "save all")
 
@@ -110,7 +111,9 @@
     "sg" '(consult-git-grep :wk "git grep")
     "si" '(consult-imenu :wk "imenu")
     "so" '(consult-outline :wk "outline")
+    "sb" '(consult-bookmark :wk "bookmark")
     "sm" '(consult-mark :wk "mark")
+    "sM" '(consult-global-mark :wk "global mark")
     "sF" '(consult-fd :wk "fd find")
 
     ;; Toggle
