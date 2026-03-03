@@ -218,6 +218,31 @@
 (define-key evil-window-map "z" #'kp/window-zoom-toggle)
 
 
+;; --- WezTerm pane navigation: C-h/j/k/l cross Emacs windows and WezTerm panes ---
+(defun kp/wezterm-navigate (direction)
+  "Try windmove in DIRECTION; if at edge, call `wezterm cli activate-pane-direction'."
+  (let ((windmove-fn (pcase direction
+                       ("left" #'windmove-left)
+                       ("down" #'windmove-down)
+                       ("up" #'windmove-up)
+                       ("right" #'windmove-right)))
+        (wezterm-dir (pcase direction
+                       ("left" "Left")
+                       ("down" "Down")
+                       ("up" "Up")
+                       ("right" "Right"))))
+    (condition-case nil
+        (funcall windmove-fn)
+      (error
+       (start-process "wezterm-nav" nil
+                      "wezterm" "cli" "activate-pane-direction" wezterm-dir)))))
+
+(evil-define-key 'normal 'global
+  (kbd "C-h") (lambda () (interactive) (kp/wezterm-navigate "left"))
+  (kbd "C-j") (lambda () (interactive) (kp/wezterm-navigate "down"))
+  (kbd "C-k") (lambda () (interactive) (kp/wezterm-navigate "up"))
+  (kbd "C-l") (lambda () (interactive) (kp/wezterm-navigate "right")))
+
 ;; --- ] / [ bracket motions: unified navigation across all modes ---
 ;; Heading navigation (org, markdown, outline)
 (with-eval-after-load 'org
