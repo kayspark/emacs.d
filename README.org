@@ -11,7 +11,7 @@ Migrated from Doom Emacs for full control over configuration without framework a
 
 | Emacs   | >= 29.1 (tested on 30.2)                      |
 | OS      | macOS (Intel); should work on Linux            |
-| Terminal| WezTerm + tmux (Super key decoding included)   |
+| Terminal| WezTerm (Super key CSI decoding for terminal)  |
 | Startup | ~0.7s batch, ~2s GUI, ~33s daemon (all packages eager) |
 
 * Prerequisites
@@ -58,7 +58,7 @@ User configuration goes in ~pre-early-init.el~, ~post-init.el~, and ~lisp/*.el~.
     ├── init-completion.el   # Vertico + corfu + consult + embark
     ├── init-ui.el           # Theme, fonts, modeline, editor defaults
     ├── init-tools.el        # Magit, eglot, treesit, formatting, spell
-    ├── init-languages.el    # Python, Java, LaTeX, Rust, R, SQL
+    ├── init-languages.el    # Python, Java, LaTeX, Rust, R, SQL, Markdown
     ├── init-org.el          # Org-mode, citations, denote, babel
     └── init-latex-classes.el  # LaTeX export class definitions
 #+end_example
@@ -70,7 +70,7 @@ User configuration goes in ~pre-early-init.el~, ~post-init.el~, and ~lisp/*.el~.
 Vim keybindings with SPC leader via general.el. ~C-u~ / ~C-d~ half-page scroll enabled.
 ~evil-want-C-i-jump~ set to ~nil~ to free TAB for ~org-cycle~ in terminal.
 
-*Packages:* evil, evil-collection, general, which-key
+*Packages:* evil, evil-collection, evil-terminal-cursor-changer, general, which-key
 
 ** ~init-completion.el~ — Completion
 
@@ -84,12 +84,13 @@ embark, embark-consult, nerd-icons-completion, nerd-icons-corfu
 
 ** ~init-ui.el~ — UI & Theme
 
-Theme: ef-themes (~ef-dream~ dark / ~ef-elea-dark~ alternate).
+Theme: nepes-themes (~nepes-dark~ / ~nepes-light~ toggle).
 Fonts: Iosevka Nerd Font Mono (base) + Paperlogy (Korean hangul).
 Modeline: doom-modeline. Git gutters: diff-hl. Undo tree: vundo.
 Relative line numbers enabled globally.
+Daemon warm-up: pre-initializes hidden NS frame at daemon startup for faster first ~emacsclient -c~.
 
-*Packages:* ef-themes, spacious-padding, doom-modeline, diff-hl, hl-todo, vundo, ws-butler
+*Packages:* nepes-themes (vc), doom-modeline, diff-hl, hl-todo, vundo, ws-butler
 
 ** ~init-tools.el~ — Dev Tools
 
@@ -107,7 +108,8 @@ pdf-tools, nerd-icons-dired, vundo, ws-butler
 Python: eglot + flymake-ruff.
 Java: jdtls via eglot (reuses Neovim Mason install), JDK 8/11/21 (Temurin).
 LaTeX: AUCTeX (~tex~) with xetex engine + PDF mode, cdlatex (snippets), laas (auto-subscript).
-Also: Rust (rustic), R, C, SQL, Markdown.
+Markdown: native syntax highlighting in fenced code blocks (~markdown-fontify-code-blocks-natively~), faces aligned with org-mode.
+Also: Rust (rustic), R, C, SQL.
 
 *Packages:* tex (AUCTeX), cdlatex, laas, flymake-ruff, rustic, markdown-mode
 
@@ -127,6 +129,234 @@ Org-export class definitions for custom document classes (nepes-article, nepes-b
 XeLaTeX with Korean font support: Paperlogy (sans), Noto Serif KR (serif),
 NanumGothicCoding (mono), Times New Roman / Arial (English).
 Pure config — no packages.
+
+* Key Bindings
+
+** Top-level
+
+| Key       | Action                         |
+|-----------+--------------------------------|
+| ~SPC SPC~ | M-x (execute-extended-command) |
+| ~SPC /~   | Grep project (ripgrep)         |
+| ~SPC :~   | Eval expression                |
+| ~SPC .~   | Find file                      |
+| ~SPC ,~   | Switch buffer                  |
+| ~SPC a~   | Embark act                     |
+| ~SPC '~   | Embark dwim                    |
+
+** Buffers (~SPC b~)
+
+| Key       | Action       |
+|-----------+--------------|
+| ~SPC b b~ | Switch       |
+| ~SPC b n~ | Next         |
+| ~SPC b p~ | Previous     |
+| ~SPC b d~ | Kill         |
+| ~SPC b m~ | Bookmark set |
+| ~SPC b s~ | Save         |
+| ~SPC b S~ | Save all     |
+
+** Code / LSP (~SPC c~)
+
+| Key       | Action       |
+|-----------+--------------|
+| ~SPC c a~ | Code actions |
+| ~SPC c r~ | Rename       |
+
+** Embark (~SPC e~)
+
+| Key       | Action  |
+|-----------+---------|
+| ~SPC e c~ | Collect |
+| ~SPC e e~ | Export  |
+| ~SPC e l~ | Live    |
+
+** Files (~SPC f~)
+
+| Key       | Action    |
+|-----------+-----------|
+| ~SPC f f~ | Find      |
+| ~SPC f d~ | Directory |
+| ~SPC f r~ | Recent    |
+| ~SPC f s~ | Save      |
+| ~SPC f R~ | Rename    |
+
+** Git (~SPC g~)
+
+| Key       | Action |
+|-----------+--------|
+| ~SPC g g~ | Status |
+| ~SPC g l~ | Log    |
+| ~SPC g b~ | Blame  |
+
+** Help (~SPC h~)
+
+| Key       | Action   |
+|-----------+----------|
+| ~SPC h f~ | Function |
+| ~SPC h v~ | Variable |
+| ~SPC h k~ | Key      |
+
+** Insert (~SPC i~)
+
+| Key       | Action                       |
+|-----------+------------------------------|
+| ~SPC i p~ | Paste image (org-download)   |
+
+** Notes / Denote (~SPC n~)
+
+| Key         | Action          |
+|-------------+-----------------|
+| ~SPC n n~   | New note        |
+| ~SPC n f~   | Open/create     |
+| ~SPC n l~   | Insert link     |
+| ~SPC n b~   | Backlinks       |
+| ~SPC n r~   | Rename          |
+| ~SPC n s~   | Grep notes      |
+| ~SPC n F~   | Find note       |
+| ~SPC n p n~ | New paper note  |
+| ~SPC n p f~ | Find paper note |
+| ~SPC n p s~ | Grep paper notes|
+
+** Open (~SPC o~)
+
+| Key       | Action        |
+|-----------+---------------|
+| ~SPC o a~ | Org agenda    |
+| ~SPC o p~ | Project dired |
+
+** Project (~SPC p~)
+
+| Key       | Action    |
+|-----------+-----------|
+| ~SPC p p~ | Switch    |
+| ~SPC p f~ | Find file |
+| ~SPC p s~ | Search    |
+
+** Search (~SPC s~)
+
+| Key       | Action           |
+|-----------+------------------|
+| ~SPC s b~ | Bookmark         |
+| ~SPC s d~ | Diagnostics      |
+| ~SPC s D~ | Buf diagnostics  |
+| ~SPC s F~ | fd find          |
+| ~SPC s g~ | Grep (ripgrep)   |
+| ~SPC s G~ | Git grep         |
+| ~SPC s i~ | Imenu            |
+| ~SPC s m~ | Mark             |
+| ~SPC s M~ | Global mark      |
+| ~SPC s o~ | Outline          |
+| ~SPC s r~ | Search replace   |
+| ~SPC s s~ | Line (consult)   |
+| ~SPC s t~ | TODO/FIXME/HACK  |
+
+** Toggle (~SPC t~)
+
+| Key       | Action       |
+|-----------+--------------|
+| ~SPC t f~ | Word wrap    |
+| ~SPC t l~ | Line numbers |
+
+** Diagnostics (~SPC x~)
+
+| Key       | Action          |
+|-----------+-----------------|
+| ~SPC x x~ | Diagnostics     |
+| ~SPC x X~ | Buf diagnostics |
+
+** Quit (~SPC q~)
+
+| Key       | Action         |
+|-----------+----------------|
+| ~SPC q q~ | Quit client    |
+| ~SPC q Q~ | Kill emacs     |
+| ~SPC q r~ | Restart daemon |
+| ~SPC q f~ | Delete frame   |
+
+** Window (~SPC w~)
+
+| Key       | Action      |
+|-----------+-------------|
+| ~SPC w d~ | Delete      |
+| ~SPC w s~ | Split below |
+| ~SPC w v~ | Split right |
+| ~SPC w m~ | Maximize    |
+| ~C-w z~   | Zoom toggle |
+
+** Clipboard (~SPC y~)
+
+| Key         | Mode   | Action               |
+|-------------+--------+----------------------|
+| ~SPC y~     | visual | Yank to clipboard    |
+| ~SPC y p~   | normal | Paste after          |
+| ~SPC y P~   | normal | Paste before         |
+
+** Org Local Leader (~SPC m~ in org-mode)
+
+| Key         | Action         |
+|-------------+----------------|
+| ~SPC m @~   | Insert citation|
+| ~SPC m v~   | View export    |
+| ~SPC m N n~ | Noter: open    |
+| ~SPC m N i~ | Noter: insert  |
+| ~SPC m N s~ | Noter: sync    |
+| ~SPC m N j~ | Noter: next    |
+| ~SPC m N k~ | Noter: prev    |
+| ~SPC m N q~ | Noter: quit    |
+
+** Org z-prefix (normal mode in org buffers)
+
+| Key  | Action                 |
+|------+------------------------|
+| ~z*~ | Jump to heading start  |
+| ~z@~ | Mark subtree           |
+| ~z^~ | Sort                   |
+| ~zb~ | Backward same-level    |
+| ~zf~ | Forward same-level     |
+| ~zn~ | Next visible heading   |
+| ~zp~ | Prev visible heading   |
+| ~zu~ | Up heading             |
+| ~zz~ | Refile                 |
+
+** Bracket Navigation (~]~ / ~[~)
+
+Unified across org, markdown, and programming modes. Matches Neovim convention.
+
+| Key      | Scope    | Action                |
+|----------+----------+-----------------------|
+| ~]]~     | org/md   | Next heading          |
+| ~[[~     | org/md   | Prev heading          |
+| ~]h~     | org/md   | Next heading (alias)  |
+| ~[h~     | org/md   | Prev heading (alias)  |
+| ~]s~     | org      | Next same-level       |
+| ~[s~     | org      | Prev same-level       |
+| ~]u~     | org/md   | Parent heading        |
+| ~]f~     | prog     | Next function         |
+| ~[f~     | prog     | Prev function         |
+| ~]c~     | prog     | Next class (treesit)  |
+| ~[c~     | prog     | Prev class (treesit)  |
+
+** WezTerm Pane Navigation
+
+~C-h/j/k/l~ crosses Emacs window splits AND WezTerm panes seamlessly.
+Tries ~windmove~ first; if at edge, calls ~wezterm cli activate-pane-direction~.
+Matches Neovim ~smart-splits.nvim~ behavior.
+
+| Key    | Action     |
+|--------+------------|
+| ~C-h~  | Pane left  |
+| ~C-j~  | Pane down  |
+| ~C-k~  | Pane up    |
+| ~C-l~  | Pane right |
+
+** LaTeX (AUCTeX)
+
+| Key       | Action                              |
+|-----------+-------------------------------------|
+| ~C-c C-a~ | Run all (compile until PDF ready)   |
+| ~C-c C-c~ | Run next command (LaTeX, View, ...) |
+| ~C-c C-v~ | View PDF                            |
 
 * Dependencies
 
@@ -243,70 +473,6 @@ Fonts are only loaded in GUI frames. Terminal Emacs uses the terminal emulator f
 | Preview.app  | Default PDF viewer | Built-in (macOS)  | ---                  |
 | Skim         | PDF sync viewer    | Optional          | skim-app.sourceforge.io |
 | pdf-tools    | In-Emacs viewer    | Optional          | MELPA (auto-installed) |
-
-* Key Bindings
-
-** Leader Keys (SPC)
-
-| Key       | Action                        |
-|-----------+-------------------------------|
-| ~SPC SPC~ | M-x (execute-extended-command)|
-| ~SPC .~   | Find file                     |
-| ~SPC ,~   | Switch buffer                 |
-| ~SPC b d~ | Kill buffer                   |
-| ~SPC b s~ | Save buffer                   |
-| ~SPC f f~ | Find file                     |
-| ~SPC f r~ | Recent files                  |
-| ~SPC f s~ | Save file                     |
-| ~SPC g g~ | Magit status                  |
-| ~SPC g l~ | Git log                       |
-| ~SPC g b~ | Git blame                     |
-| ~SPC h f~ | Describe function             |
-| ~SPC h v~ | Describe variable             |
-| ~SPC h k~ | Describe key                  |
-| ~SPC p p~ | Switch project                |
-| ~SPC p f~ | Project find file             |
-| ~SPC p s~ | Project search (ripgrep)      |
-| ~SPC s s~ | Search line (consult)         |
-| ~SPC s p~ | Search project (ripgrep)      |
-| ~SPC s i~ | Search imenu                  |
-| ~SPC t l~ | Toggle line numbers           |
-| ~SPC t f~ | Toggle word wrap              |
-| ~SPC w s~ | Split below                   |
-| ~SPC w v~ | Split right                   |
-| ~SPC w d~ | Delete window                 |
-| ~SPC w m~ | Maximize window               |
-
-** Super Keys (GUI & Terminal)
-
-| Key       | Action              |
-|-----------+---------------------|
-| ~s-h/j/k/l~ | Window navigation|
-| ~s-0~     | Delete window       |
-| ~s-+/-~   | Resize height       |
-| ~s->/<~   | Resize width        |
-| ~s-a~     | Org agenda          |
-| ~s-b~     | Switch buffer       |
-| ~s-d~     | Consult dir         |
-| ~s-f~     | Find file (fd)      |
-| ~s-g~     | Git grep            |
-| ~s-i~     | Imenu               |
-| ~s-o~     | Outline             |
-| ~s-r~     | Ripgrep             |
-| ~s-m~     | Marks               |
-| ~s-;~     | Embark act          |
-| ~s-q~     | Flymake diagnostics |
-
-Super keys work in terminal via WezTerm CSI u-encoding.
-See ~post-init.el~ for the decode map.
-
-** LaTeX (AUCTeX)
-
-| Key       | Action                              |
-|-----------+-------------------------------------|
-| ~C-c C-a~ | Run all (compile until PDF ready)   |
-| ~C-c C-c~ | Run next command (LaTeX, View, ...) |
-| ~C-c C-v~ | View PDF                            |
 
 * Known Issues
 
