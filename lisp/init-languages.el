@@ -124,7 +124,12 @@
   (setq markdown-code-lang-modes
         (append '(("python" . python-mode)
                   ("sql" . sql-mode))
-                markdown-code-lang-modes)))
+                markdown-code-lang-modes))
+  ;; Align markdown code faces with org-mode (subdued, not yellow)
+  (custom-set-faces
+   '(markdown-code-face ((t (:inherit org-code))))
+   '(markdown-pre-face ((t (:inherit org-block))))
+   '(markdown-inline-code-face ((t (:inherit org-verbatim))))))
 
 ;; --- Rust (on-demand) ---
 (use-package rustic
