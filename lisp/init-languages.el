@@ -120,16 +120,19 @@
   (setq markdown-command "multimarkdown"
         markdown-enable-math t
         markdown-enable-highlighting-syntax t
-        markdown-enable-wiki-links t)
+        markdown-enable-wiki-links t
+        markdown-fontify-code-blocks-natively t)
   (setq markdown-code-lang-modes
         (append '(("python" . python-mode)
                   ("sql" . sql-mode))
                 markdown-code-lang-modes))
-  ;; Align markdown code faces with org-mode (subdued, not yellow)
+  ;; Align markdown code faces with org-mode
+  ;; - code blocks: dark bg + native syntax highlighting (like org src blocks)
+  ;; - inline code: default fg on dark bg (subdued)
   (custom-set-faces
-   '(markdown-code-face ((t (:inherit org-code))))
+   '(markdown-code-face ((t (:inherit org-block))))
    '(markdown-pre-face ((t (:inherit org-block))))
-   '(markdown-inline-code-face ((t (:inherit org-verbatim))))))
+   '(markdown-inline-code-face ((t (:inherit org-code))))))
 
 ;; --- Rust (on-demand) ---
 (use-package rustic
