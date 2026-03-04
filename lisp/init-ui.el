@@ -1,19 +1,22 @@
 ;;; init-ui.el --- UI, theme, and editor defaults -*- lexical-binding: t; -*-
 
 ;; --- Theme ---
-(use-package ef-themes
+(use-package nepes-themes
+  :vc (:url "https://github.com/kayspark/emacs-nepes" :branch "main")
   :demand t
   :config
-  (setq ef-themes-mixed-fonts t
-        ef-themes-variable-pitch-ui nil
-        ef-themes-headings
+  (add-to-list 'custom-theme-load-path
+               (file-name-directory (locate-library "nepes-themes")))
+  (setq nepes-themes-mixed-fonts t
+        nepes-themes-variable-pitch-ui nil
+        nepes-themes-headings
         '((0 . (variable-pitch 1.6))
           (1 . (variable-pitch 1.5))
           (2 . (variable-pitch 1.4))
           (3 . (variable-pitch 1.3))
           (4 . (variable-pitch 1.2))
           (t . (variable-pitch 1.1)))
-        ef-themes-to-toggle '(ef-dream ef-elea-dark)))
+        nepes-themes-to-toggle '(nepes-dark nepes-light)))
 
 ;; Built-in padding (replaces spacious-padding package)
 (setq-default left-fringe-width 20
@@ -23,7 +26,7 @@
 
 (defun kp/setup-theme ()
   "Load theme."
-  (load-theme 'ef-dream :no-confirm))
+  (load-theme 'nepes-dark :no-confirm))
 
 (if (daemonp)
     (add-hook 'server-after-make-frame-hook #'kp/setup-theme)
