@@ -257,10 +257,10 @@
 
 (with-eval-after-load 'markdown-mode
   (evil-define-key 'normal markdown-mode-map
-    "]]" #'markdown-next-heading
-    "[[" #'markdown-previous-heading
-    "]h" #'markdown-next-heading
-    "[h" #'markdown-previous-heading
+    "]]" #'markdown-outline-next
+    "[[" #'markdown-outline-previous
+    "]h" #'markdown-outline-next
+    "[h" #'markdown-outline-previous
     "]u" #'markdown-up-heading))
 
 ;; Function navigation (all programming modes via beginning/end-of-defun)

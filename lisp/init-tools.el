@@ -86,7 +86,8 @@
 
 ;; --- Shell ---
 (with-eval-after-load 'shell
-  (define-key shell-mode-map (kbd "C-r") #'consult-history))
+  (define-key shell-mode-map (kbd "C-r") #'consult-history)
+  (evil-define-key 'insert shell-mode-map (kbd "C-r") #'consult-history))
 
 ;; --- Dired ---
 (with-eval-after-load 'dired
