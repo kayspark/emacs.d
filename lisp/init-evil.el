@@ -243,6 +243,18 @@
   (kbd "C-k") (lambda () (interactive) (kp/wezterm-navigate "up"))
   (kbd "C-l") (lambda () (interactive) (kp/wezterm-navigate "right")))
 
+;; --- gc / gcc commenting (matches Neovim built-in) ---
+(evil-define-operator kp/evil-comment-toggle (beg end)
+  "Toggle comment on region (like Neovim gc)."
+  :move-point nil
+  (interactive "<r>")
+  (comment-or-uncomment-region beg end))
+
+(evil-define-key 'normal 'global
+  "gc" 'kp/evil-comment-toggle)
+(evil-define-key 'visual 'global
+  "gc" 'kp/evil-comment-toggle)
+
 ;; --- ] / [ bracket motions: unified navigation across all modes ---
 ;; Heading navigation (org, markdown, outline)
 (with-eval-after-load 'org
