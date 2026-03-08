@@ -29,12 +29,12 @@
 \\else
   \\usepackage{fontspec}
   \\setmainfont{Times New Roman}
-  \\setsansfont{Arial}
-  \\setmonofont{Courier New}
+  \\setsansfont{Paperlogy}[Scale=0.95]
+  \\setmonofont{Iosevka SS14}[Scale=0.85]
 
   \\setmainhangulfont[Ligatures=TeX]{Noto Serif KR}
   \\setsanshangulfont[Ligatures=TeX]{Paperlogy}
-  \\setmonohangulfont[Ligatures=TeX]{NanumGothicCoding}
+  \\setmonohangulfont[Ligatures=TeX]{Paperlogy}[Scale=0.95]
 
   \\usepackage{unicode-math}
   \\setmathfont{Latin Modern Math}
