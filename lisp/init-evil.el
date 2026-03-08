@@ -218,9 +218,10 @@
 (define-key evil-window-map "z" #'kp/window-zoom-toggle)
 
 
-;; --- WezTerm pane navigation: C-h/j/k/l cross Emacs windows and WezTerm panes ---
-(defun kp/wezterm-navigate (direction)
-  "Try windmove in DIRECTION; if at edge, call `wezterm cli activate-pane-direction'."
+;; --- Terminal pane navigation: C-h/j/k/l cross Emacs windows and terminal panes ---
+;; Supports WezTerm and Kitty (auto-detected via TERM_PROGRAM / KITTY_PID).
+(defun kp/terminal-navigate (direction)
+  "Try windmove in DIRECTION; if at edge, delegate to WezTerm or Kitty."
   (let ((windmove-fn (pcase direction
                        ("left" #'windmove-left)
                        ("down" #'windmove-down)
@@ -230,18 +231,28 @@
                        ("left" "Left")
                        ("down" "Down")
                        ("up" "Up")
-                       ("right" "Right"))))
+                       ("right" "Right")))
+        (kitty-dir (pcase direction
+                     ("left" "left")
+                     ("down" "bottom")
+                     ("up" "top")
+                     ("right" "right"))))
     (condition-case nil
         (funcall windmove-fn)
       (error
-       (start-process "wezterm-nav" nil
-                      "wezterm" "cli" "activate-pane-direction" wezterm-dir)))))
+       (cond
+        ((getenv "KITTY_PID")
+         (start-process "kitty-nav" nil
+                        "kitty" "@" "kitten" "neighboring_window" kitty-dir))
+        (t
+         (start-process "wezterm-nav" nil
+                        "wezterm" "cli" "activate-pane-direction" wezterm-dir)))))))
 
 (evil-define-key 'normal 'global
-  (kbd "C-h") (lambda () (interactive) (kp/wezterm-navigate "left"))
-  (kbd "C-j") (lambda () (interactive) (kp/wezterm-navigate "down"))
-  (kbd "C-k") (lambda () (interactive) (kp/wezterm-navigate "up"))
-  (kbd "C-l") (lambda () (interactive) (kp/wezterm-navigate "right")))
+  (kbd "C-h") (lambda () (interactive) (kp/terminal-navigate "left"))
+  (kbd "C-j") (lambda () (interactive) (kp/terminal-navigate "down"))
+  (kbd "C-k") (lambda () (interactive) (kp/terminal-navigate "up"))
+  (kbd "C-l") (lambda () (interactive) (kp/terminal-navigate "right")))
 
 ;; --- gc / gcc commenting (matches Neovim built-in) ---
 (evil-define-operator kp/evil-comment-toggle (beg end)
