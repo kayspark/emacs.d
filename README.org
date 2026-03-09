@@ -2,6 +2,18 @@
 #+AUTHOR: kaypark
 #+OPTIONS: toc:2 num:t
 
+** Screenshots
+
+| Dark | Light |
+|------+-------|
+| [[file:docs/dark.png]] | [[file:docs/light.png]] |
+
+*** Demo
+
+| Dark | Light |
+|------+-------|
+| [[file:docs/dark.gif]] | [[file:docs/light.gif]] |
+
 * Overview
 
 Modular Emacs configuration built on [[https://github.com/jamescherti/minimal-emacs.d][minimal-emacs.d]] (v1.3.1) by James Cherti.
