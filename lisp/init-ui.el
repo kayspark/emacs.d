@@ -28,8 +28,23 @@
   "Load theme."
   (load-theme 'nepes-dark :no-confirm))
 
+;; macOS NS port limitation (bug#44794, related since 2004):
+;; menu-bar-mode, default-frame-alist, and early-init.el are all
+;; insufficient — the NS port forcibly re-enables the menu bar on
+;; every new frame creation (nsterm.m/nsfns.m clobbers frame params).
+;; The ONLY reliable fix is `set-frame-parameter' called AFTER the
+;; frame exists, via `server-after-make-frame-hook'.
+;; Track: https://lists.gnu.org/archive/html/bug-gnu-emacs/2020-12/msg01304.html
+(defun kp/disable-menu-bar (&rest _)
+  "Disable menu bar on the selected frame (macOS NS workaround)."
+  (set-frame-parameter nil 'menu-bar-lines 0))
+
+(menu-bar-mode -1)
+
 (if (daemonp)
-    (add-hook 'server-after-make-frame-hook #'kp/setup-theme)
+    (progn
+      (add-hook 'server-after-make-frame-hook #'kp/setup-theme)
+      (add-hook 'server-after-make-frame-hook #'kp/disable-menu-bar))
   (add-hook 'after-init-hook #'kp/setup-theme))
 
 ;; --- Fonts ---
