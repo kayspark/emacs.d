@@ -38,3 +38,4 @@ flycheck_*.el
 .*
 !.gitignore
 !.gitkeep
+projects
