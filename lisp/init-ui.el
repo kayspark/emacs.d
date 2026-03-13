@@ -198,4 +198,9 @@
               (run-with-timer 2 nil #'delete-frame frame))
           (error (message "Warm-up failed: %s" err)))))))
 
+;; --- Color preview ---
+(use-package rainbow-mode
+  :ensure t
+  :hook (prog-mode css-mode html-mode conf-mode))
+
 (provide 'init-ui)
