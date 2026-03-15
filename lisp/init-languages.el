@@ -142,10 +142,18 @@
         rustic-indent-offset 2)
   (add-hook 'rustic-mode-hook #'kp/eglot-ensure-safe))
 
-;; --- R (on-demand) ---
+;; --- R (ESS + eglot) ---
+(use-package ess
+  :defer t
+  :config
+  (setq ess-use-flymake nil           ; use eglot instead
+        ess-style 'RStudio
+        ess-ask-for-ess-directory nil  ; use default-directory
+        inferior-R-program-name "R"))
+
 (with-eval-after-load 'eglot
-  (add-to-list 'eglot-server-programs '(R-mode . ("R" "--slave" "-e" "languageserver::run()"))))
-(add-hook 'R-mode-hook #'kp/eglot-ensure-safe)
+  (add-to-list 'eglot-server-programs '(ess-r-mode . ("R" "--slave" "-e" "languageserver::run()"))))
+(add-hook 'ess-r-mode-hook #'kp/eglot-ensure-safe)
 
 ;; --- C/C++ (on-demand) ---
 (with-eval-after-load 'cc-mode
