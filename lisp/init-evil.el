@@ -145,7 +145,39 @@
     "wv" '(split-window-right :wk "split right")
     "wm" '(delete-other-windows :wk "maximize"))
 
-  ;; Clipboard (system)
+  ;; Clipboard (system) — GUI uses NS clipboard, terminal uses pbcopy or OSC 52.
+  ;; Must wrap default functions because daemon sets gui-select-text after init.
+  (defun kp/interprogram-cut (text)
+    "Copy TEXT to system clipboard. GUI: NS clipboard. Terminal: pbcopy or OSC 52."
+    (if (display-graphic-p)
+        (gui-select-text text)
+      (if (executable-find "pbcopy")
+          (let ((proc (make-process :name "pbcopy"
+                                    :command '("pbcopy")
+                                    :connection-type 'pipe
+                                    :noquery t)))
+            (process-send-string proc text)
+            (process-send-eof proc))
+        ;; SSH: OSC 52
+        (send-string-to-terminal
+         (concat "\e]52;c;"
+                 (base64-encode-string (encode-coding-string text 'utf-8) t)
+                 "\e\\")))))
+  (defun kp/interprogram-paste ()
+    "Paste from system clipboard. GUI: NS clipboard. Terminal: pbpaste."
+    (if (display-graphic-p)
+        (gui-selection-value)
+      (when (executable-find "pbpaste")
+        (let ((clip (shell-command-to-string "pbpaste")))
+          (unless (string= clip (car kill-ring))
+            clip)))))
+  ;; Set after init to override NS defaults; also hook for daemon frames
+  (setq interprogram-cut-function #'kp/interprogram-cut
+        interprogram-paste-function #'kp/interprogram-paste)
+  (add-hook 'after-init-hook
+            (lambda ()
+              (setq interprogram-cut-function #'kp/interprogram-cut
+                    interprogram-paste-function #'kp/interprogram-paste)))
   (kp/leader-def
     "y" '(:ignore t :wk "clipboard"))
   (general-define-key

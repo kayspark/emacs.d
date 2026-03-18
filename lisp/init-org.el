@@ -237,11 +237,14 @@
   (setq org-download-image-dir "~/org/downloads"))
 
 ;; --- Engrave-faces (LaTeX source block highlighting) ---
+;; Fork: kayspark/engrave-faces — hex-color validation + nepes presets
 (use-package engrave-faces
+  :vc (:url "https://github.com/kayspark/engrave-faces" :branch "main")
   :defer t
   :after ox-latex
   :config
-  (setq org-latex-listings 'engraved))
+  (setq org-latex-listings 'engraved
+        org-latex-engraved-theme 'nepes-light))
 
 ;; --- Mixed-pitch (built-in face remapping) ---
 ;; Use variable-pitch for prose, keep fixed-pitch for code/tables
