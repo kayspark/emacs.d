@@ -21,3 +21,4 @@
 (with-eval-after-load 'gnutls
   (add-to-list 'gnutls-trustfiles
                (expand-file-name "~/.config/ssl/ca-bundle.pem")))
+(setq package-check-signature nil)
