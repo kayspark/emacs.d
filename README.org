@@ -24,7 +24,7 @@ Migrated from Doom Emacs for full control over configuration without framework a
 | Emacs   | >= 29.1 (tested on 30.2)                      |
 | OS      | macOS (Intel); should work on Linux            |
 | Terminal| WezTerm (Super key CSI decoding for terminal)  |
-| Startup | ~0.7s batch, ~2s GUI, ~33s daemon (all packages eager) |
+| Startup | ~0.7s batch, ~2s GUI, ~33s daemon (full), <1s daemon (denote) |
 
 * Prerequisites
 
@@ -48,10 +48,18 @@ emacs
 For daemon mode:
 
 #+begin_src bash
-emacs --daemon
-emacsclient -c     # GUI frame
-emacsclient -nw    # terminal frame
+emacs --daemon              # Full daemon (~33s, all 47 packages)
+emacs --daemon=denote       # Lightweight daemon (<1s, 12 packages — for Raycast)
+emacsclient -c              # GUI frame (connects to default daemon)
+emacsclient --socket-name=~/.config/emacs/server/denote -c  # Connect to denote daemon
 #+end_src
+
+Both daemons are managed by launchd (=RunAtLoad + KeepAlive=):
+
+| Daemon  | LaunchAgent                     | Socket                          | Startup |
+|---------+---------------------------------+---------------------------------+---------|
+| default | =org.gnu.emacs.daemon=          | =~/.config/emacs/server/server= | ~33s    |
+| denote  | =org.gnu.emacs.denote=          | =~/.config/emacs/server/denote= | <1s     |
 
 The framework files (~early-init.el~, ~init.el~) should not be modified directly.
 User configuration goes in ~pre-early-init.el~, ~post-init.el~, and ~lisp/*.el~.
@@ -63,7 +71,7 @@ User configuration goes in ~pre-early-init.el~, ~post-init.el~, and ~lisp/*.el~.
 ├── early-init.el            # minimal-emacs.d bootstrap (DO NOT EDIT)
 ├── init.el                  # Package setup, use-package (DO NOT EDIT)
 ├── pre-early-init.el        # Frame defaults, UI features (user hook)
-├── post-init.el             # Module loader + terminal Super key decoding
+├── post-init.el             # Module loader (dispatches denote vs full)
 ├── custom.el                # Customize-set-variables (auto-generated)
 └── lisp/
     ├── init-evil.el         # Evil + general.el + which-key
@@ -72,7 +80,8 @@ User configuration goes in ~pre-early-init.el~, ~post-init.el~, and ~lisp/*.el~.
     ├── init-tools.el        # Magit, eglot, treesit, formatting, spell
     ├── init-languages.el    # Python, Java, LaTeX, Rust, R, SQL, Markdown
     ├── init-org.el          # Org-mode, citations, denote, babel
-    └── init-latex-classes.el  # LaTeX export class definitions
+    ├── init-latex-classes.el  # LaTeX export class definitions
+    └── init-denote-server.el  # Minimal init for denote daemon (12 packages)
 #+end_example
 
 * Module Reference
@@ -141,6 +150,23 @@ Org-export class definitions for custom document classes (nepes-article, nepes-b
 XeLaTeX with Korean font support: Paperlogy (sans), Noto Serif KR (serif),
 NanumGothicCoding (mono), Times New Roman / Arial (English).
 Pure config — no packages.
+
+** ~init-denote-server.el~ — Lightweight Denote Daemon
+
+Minimal init loaded when =emacs --daemon=denote= is used. Provides fast startup (<1s) for [[https://github.com/kayspark/raycast-denote][Raycast denote]] integration.
+
+*Packages (12):* evil, general, which-key, vertico, orderless, nepes-themes, doom-modeline, org, org-modern, denote
+
+*Skips (35+):* evil-collection, corfu, cape, marginalia, consult, embark, treesit-auto, envrc, magit, apheleia, jinx, pdf-tools, all language modes, LaTeX classes, citar, ess, org-noter, org-download, engrave-faces
+
+Dispatch logic in ~post-init.el~:
+
+#+begin_src elisp
+(when (equal (daemonp) "denote")
+  (require 'init-denote-server))
+#+end_src
+
+=(daemonp)= returns the daemon name as a string with =--daemon=NAME=.
 
 * Key Bindings
 
@@ -489,7 +515,7 @@ Fonts are only loaded in GUI frames. Terminal Emacs uses the terminal emulator f
 * Known Issues
 
 - ~evil-want-C-i-jump~ set to ~nil~: frees TAB for ~org-cycle~ in terminal, but loses ~C-i~ jump-forward.
-- Daemon startup ~33s: all packages are eager-loaded for reliable daemon operation.
+- Full daemon startup ~33s: all packages eager-loaded. Use =--daemon=denote= (<1s) for note-only workflows.
 - ~TeX-master~ prompts on first open of ~.tex~ files (set to ~t~ = self by default).
 - ~kp/eglot-ensure-safe~ guards eglot: skips LSP start if no GUI frame exists (daemon safety).
 - ~pdf-tools~ does not work in terminal Emacs; falls back to ~Preview.app~ for PDF viewing.

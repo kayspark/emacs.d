@@ -6,6 +6,11 @@
 ;; Add lisp/ to load path
 (add-to-list 'load-path (expand-file-name "lisp" user-emacs-directory))
 
+;; Lightweight denote daemon: load minimal init and skip full module chain
+(when (equal (daemonp) "denote")
+  (require 'init-denote-server))
+
+(unless (equal (daemonp) "denote")
 ;; Terminal Super key decoding (WezTerm CSI u-encoding: \e[27;8;<charcode>~)
 ;; Maps escape sequences sent by WezTerm CMD+key bindings to Emacs s-<key>.
 (unless (display-graphic-p)
@@ -18,7 +23,7 @@
       (format "\e[27;8;%d~" (car pair))
       (kbd (cdr pair)))))
 
-;; Core
+;; Core (full module chain — skipped for "denote" daemon above)
 (require 'init-evil)
 (require 'init-completion)
 (require 'init-ui)
@@ -26,5 +31,6 @@
 (require 'init-languages)
 (require 'init-org)
 (require 'init-latex-classes)
+) ;; end (unless (equal (daemonp) "denote") ...)
 
 (provide 'post-init)
