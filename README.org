@@ -24,7 +24,7 @@ Migrated from Doom Emacs for full control over configuration without framework a
 | Emacs   | >= 29.1 (tested on 30.2)                      |
 | OS      | macOS (Intel); should work on Linux            |
 | Terminal| WezTerm (Super key CSI decoding for terminal)  |
-| Startup | ~0.7s batch, ~2s GUI, ~33s daemon (full), <1s daemon (denote) |
+| Startup | ~0.5s batch, ~1s daemon (M5 Max). Full: 546 features, Denote: 306 features |
 
 * Prerequisites
 
@@ -48,18 +48,27 @@ emacs
 For daemon mode:
 
 #+begin_src bash
-emacs --daemon              # Full daemon (~33s, all 47 packages)
-emacs --daemon=denote       # Lightweight daemon (<1s, 12 packages — for Raycast)
-emacsclient -c              # GUI frame (connects to default daemon)
-emacsclient --socket-name=~/.config/emacs/server/denote -c  # Connect to denote daemon
+emacs --daemon              # Full daemon (all 47 packages)
+emacs --daemon=denote       # Lightweight daemon (12 packages — for Raycast/notes)
 #+end_src
 
 Both daemons are managed by launchd (=RunAtLoad + KeepAlive=):
 
-| Daemon  | LaunchAgent                     | Socket                          | Startup |
-|---------+---------------------------------+---------------------------------+---------|
-| default | =org.gnu.emacs.daemon=          | =~/.config/emacs/server/server= | ~33s    |
-| denote  | =org.gnu.emacs.denote=          | =~/.config/emacs/server/denote= | <1s     |
+| Daemon  | LaunchAgent                     | Socket                          | Packages | Features |
+|---------+---------------------------------+---------------------------------+----------+----------|
+| default | =org.gnu.emacs.daemon=          | =~/.config/emacs/server/server= | 47       | 546      |
+| denote  | =org.gnu.emacs.denote=          | =~/.config/emacs/server/denote= | 12       | 306      |
+
+*** Shell Aliases (=~/.config/zsh/.zshrc=)
+
+| Alias  | Daemon | Mode     | Command                                      |
+|--------+--------+----------+----------------------------------------------|
+| =ec=   | denote | GUI      | Quick note viewing/editing                   |
+| =ect=  | denote | Terminal | Quick note viewing/editing in terminal        |
+| =ecf=  | full   | GUI      | Full editing (magit, LSP, LaTeX, languages)  |
+| =ecft= | full   | Terminal | Full editing in terminal                     |
+
+Use =ecf= / =ecft= when you need magit, eglot/LSP, AUCTeX, citar, treesit-auto, or envrc.
 
 The framework files (~early-init.el~, ~init.el~) should not be modified directly.
 User configuration goes in ~pre-early-init.el~, ~post-init.el~, and ~lisp/*.el~.
@@ -515,7 +524,7 @@ Fonts are only loaded in GUI frames. Terminal Emacs uses the terminal emulator f
 * Known Issues
 
 - ~evil-want-C-i-jump~ set to ~nil~: frees TAB for ~org-cycle~ in terminal, but loses ~C-i~ jump-forward.
-- Full daemon startup ~33s: all packages eager-loaded. Use =--daemon=denote= (<1s) for note-only workflows.
+- Full daemon loads 240 more features than denote daemon (546 vs 306). Both start in ~1s on M5 Max (the 33s figure was from older hardware). Use =--daemon=denote= for isolation (no envrc, treesit-auto, magit hooks).
 - ~TeX-master~ prompts on first open of ~.tex~ files (set to ~t~ = self by default).
 - ~kp/eglot-ensure-safe~ guards eglot: skips LSP start if no GUI frame exists (daemon safety).
 - ~pdf-tools~ does not work in terminal Emacs; falls back to ~Preview.app~ for PDF viewing.
