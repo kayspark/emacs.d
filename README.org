@@ -543,7 +543,7 @@ emacs --batch -l ~/.config/emacs/early-init.el \
 ** LaTeX Export (with nepes-latex templates)
 
 #+begin_src bash
-cd ~/workspace/nepes-latex-template
+cd ~/workspace/nepes-doc-suite
 emacs --batch -l test-export.el
 #+end_src
 
