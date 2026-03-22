@@ -55,29 +55,24 @@
           (and (looking-at org-outline-regexp)
                (looking-back "^\**"))))
 
-  ;; Babel languages
-  ;; NOTE: R is loaded on-demand (not here) because ob-R requires ESS,
-  ;; which tries to start an inferior R process and hangs in batch/daemon mode.
-  ;; R babel is loaded when user first executes an R block (C-c C-c) via
-  ;; the autoload below.
-  (org-babel-do-load-languages
-   'org-babel-load-languages
-   '((emacs-lisp . t)
-     (python . t)
-     (shell . t)
-     (sql . t)
-     (latex . t)))
+  ;; Babel: declare available languages but don't eagerly load backends.
+  ;; Each ob-LANG is auto-required on first block execution via advice.
+  ;; R is included here but ESS is loaded on-demand (see advice below).
+  (setq org-babel-load-languages
+        '((emacs-lisp . t) (python . t) (shell . t)
+          (sql . t) (latex . t) (R . t)))
 
-  ;; Deferred R babel: load ESS + ob-R only when user executes an R block
-  (defun kp/org-babel-load-R-on-demand (&rest _)
-    "Load ob-R (ESS) on first R block execution, then remove this advice."
-    (unless (assoc 'R org-babel-load-languages)
-      (require 'ess-r-mode)
-      (org-babel-do-load-languages
-       'org-babel-load-languages
-       (cons '(R . t) org-babel-load-languages))
-      (message "Loaded R babel (ESS) on demand")))
-  (advice-add 'org-babel-execute:R :before #'kp/org-babel-load-R-on-demand)
+  (defun kp/org-babel-ensure-backend (&optional _arg _info _params)
+    "Auto-require ob-LANG before executing a source block."
+    (when-let* ((info (org-babel-get-src-block-info t))
+                (lang (car info))
+                (feature-name (pcase lang
+                                ((or "sh" "bash") "shell")
+                                ("R" (require 'ess-r-mode nil t) "R")
+                                (_ lang)))
+                (sym (intern (format "ob-%s" feature-name))))
+      (unless (featurep sym) (require sym nil t))))
+  (advice-add 'org-babel-execute-src-block :before #'kp/org-babel-ensure-backend)
 
   (add-to-list 'org-src-block-faces '("latex" (:inherit default :extend t)))
   (add-hook 'org-babel-after-execute-hook 'org-display-inline-images)

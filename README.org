@@ -24,7 +24,7 @@ Migrated from Doom Emacs for full control over configuration without framework a
 | Emacs   | >= 29.1 (tested on 30.2)                      |
 | OS      | macOS (Intel); should work on Linux            |
 | Terminal| WezTerm (Super key CSI decoding for terminal)  |
-| Startup | ~0.5s batch, ~1s daemon (M5 Max). Full: 546 features, Denote: 306 features |
+| Startup | ~0.5s batch, ~0.57s daemon (M5 Max ARM64). Full: 372 features, Denote: 306 features |
 
 * Prerequisites
 
@@ -115,23 +115,23 @@ embark, embark-consult, nerd-icons-completion, nerd-icons-corfu
 ** ~init-ui.el~ — UI & Theme
 
 Theme: nepes-themes (~nepes-dark~ / ~nepes-light~ toggle).
-Fonts: Iosevka Nerd Font Mono (base) + Paperlogy (Korean hangul).
-Modeline: doom-modeline. Git gutters: diff-hl. Undo tree: vundo.
+Fonts: Iosevka SS14 (base) + Paperlogy (Korean hangul) + NanumGothicCoding (fixed-pitch Korean).
+Modeline: doom-modeline (deferred to ~after-init-hook~ for faster startup). Git gutters: diff-hl.
 Relative line numbers enabled globally.
-Daemon warm-up: pre-initializes hidden NS frame at daemon startup for faster first ~emacsclient -c~.
+Daemon warm-up: pre-initializes hidden NS frame at 3s to make first ~emacsclient -c~ instant.
 
-*Packages:* nepes-themes (vc), doom-modeline, diff-hl, hl-todo, vundo, ws-butler
+*Packages:* nepes-themes (vc), doom-modeline, diff-hl, rainbow-mode
 
 ** ~init-tools.el~ — Dev Tools
 
 Git: magit (status, log, blame). Diff: ediff (side-by-side, window restore).
 LSP: eglot (built-in) with texlab (LaTeX), sqls (SQL).
-Tree-sitter: treesit-auto (grammar auto-install). Direnv: envrc.
+Tree-sitter: treesit-auto (grammar auto-install, deferred to ~after-init-hook~). Direnv: envrc.
 Formatting: apheleia (async, sqlfluff for Oracle SQL).
 Spell: jinx (enchant backend). PDF: pdf-tools.
 
 *Packages:* magit, treesit-auto, envrc, apheleia, jinx, editorconfig,
-pdf-tools, nerd-icons-dired, vundo, ws-butler
+pdf-tools, vundo
 
 ** ~init-languages.el~ — Languages
 
@@ -148,7 +148,7 @@ Also: Rust (rustic), R, C, SQL.
 TODO states: PLANNED / TODO / PROG / REVIEW / DONE / CANCEL (with color faces).
 Agenda, citations (citar + citar-embark), notes (denote + consult-denote),
 PDF annotations (org-noter), image paste (org-download), code export (engrave-faces).
-Babel: Python, SQLite, ditaa, LaTeX.
+Babel: emacs-lisp, Python, Shell, SQL, LaTeX, R — all lazy-loaded on first block execution.
 
 *Packages:* org-modern, citar, citar-embark, org-noter, denote,
 consult-denote, org-download, engrave-faces, mixed-pitch
@@ -524,7 +524,8 @@ Fonts are only loaded in GUI frames. Terminal Emacs uses the terminal emulator f
 * Known Issues
 
 - ~evil-want-C-i-jump~ set to ~nil~: frees TAB for ~org-cycle~ in terminal, but loses ~C-i~ jump-forward.
-- Full daemon loads 240 more features than denote daemon (546 vs 306). Both start in ~1s on M5 Max (the 33s figure was from older hardware). Use =--daemon=denote= for isolation (no envrc, treesit-auto, magit hooks).
+- Full daemon loads ~70 more features than denote daemon (372 vs 306). Full starts in ~0.57s on M5 Max ARM64. Use =--daemon=denote= for isolation (no envrc, treesit-auto, magit hooks).
+- See [[file:docs/2026-03-22-daemon-perf-tuning.org][Daemon Performance Tuning]] for profiling methodology and optimization decisions.
 - ~TeX-master~ prompts on first open of ~.tex~ files (set to ~t~ = self by default).
 - ~kp/eglot-ensure-safe~ guards eglot: skips LSP start if no GUI frame exists (daemon safety).
 - ~pdf-tools~ does not work in terminal Emacs; falls back to ~Preview.app~ for PDF viewing.

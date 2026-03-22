@@ -34,12 +34,11 @@
   (add-to-list 'eglot-server-programs '(latex-mode . ("texlab")))
   (add-to-list 'eglot-server-programs '(sql-mode . ("sqls"))))
 
-;; --- Treesit-auto (auto-install grammars) ---
+;; --- Treesit-auto (auto-install grammars, deferred to after-init) ---
 (use-package treesit-auto
-  :demand t
+  :hook (after-init . global-treesit-auto-mode)
   :config
-  (setq treesit-auto-install 'prompt)
-  (global-treesit-auto-mode 1))
+  (setq treesit-auto-install 'prompt))
 
 ;; --- Envrc (direnv integration) ---
 (use-package envrc

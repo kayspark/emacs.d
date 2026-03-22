@@ -19,7 +19,7 @@
   :config
   (evil-mode 1))
 
-;; Evil-collection — evil bindings for 80+ modes
+;; Evil-collection — evil bindings for 80+ modes (eval-after-load, not eager)
 (use-package evil-collection
   :after evil
   :demand t

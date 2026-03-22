@@ -1,0 +1,246 @@
+#+TITLE: Emacs Daemon — Performance Tuning Design
+#+AUTHOR: Kay Park
+#+DATE: 2026-03-22
+#+LATEX_CLASS: nepes-article
+#+LATEX_CLASS_OPTIONS: [dark]
+#+OPTIONS: toc:2 num:t
+
+* Problem Statement
+
+** Background
+
+Full daemon (~emacs --daemon~) loads 7 modules with 47 packages, ~370 features.
+Startup measured at *635ms* on M5 Max (ARM64, macOS Tahoe).
+
+Module-level profiling revealed:
+
+| Module           | Time (ms) | % of Total |
+|------------------+-----------+------------|
+| init-evil        |       250 |        63% |
+| init-ui          |        68 |        17% |
+| init-tools       |        45 |        11% |
+| init-completion  |        29 |         7% |
+| init-languages   |       0.3 |        <1% |
+| init-org         |       0.8 |        <1% |
+| init-latex-class |       0.2 |        <1% |
+|------------------+-----------+------------|
+| *Module total*   |   *394ms* |            |
+| *Full daemon*    |   *635ms* |            |
+
+Framework overhead (minimal-emacs.d bootstrap, pre-early-init): ~241ms.
+
+Additional first-use costs:
+- *First org file*: ~200–400ms from ~org-babel-do-load-languages~ eagerly loading 5 babel backends (ob-python, ob-shell, ob-sql, ob-latex, ob-emacs-lisp)
+- *First emacsclient -c*: ~3–5s without warm-up (macOS Cocoa stack + theme + fontset initialization)
+
+** Goal
+
+Reduce daemon startup time while preserving zero-latency first interaction.
+
+** Non-Goals
+
+- Replacing Evil (200ms irreducible cost — it's the core input system)
+- Reducing the denote daemon (already minimal at 306 features, <1s)
+- Runtime latency optimization (GC threshold at 32MB is adequate)
+
+* Requirements
+
+** Functional Requirements
+
+| ID | Requirement                                     | Priority |
+|----+-------------------------------------------------+----------|
+| F1 | All modes functional after daemon start          | Must     |
+| F2 | Babel blocks execute on first C-c C-c            | Must     |
+| F3 | No visible modeline/theme flash on first frame   | Must     |
+| F4 | envrc loads before first eglot connection         | Must     |
+
+** Non-Functional Requirements
+
+| ID  | Requirement         | Target  | Rationale                    |
+|-----+---------------------+---------+------------------------------|
+| NF1 | Daemon init time    | <600ms  | Perceptible threshold        |
+| NF2 | First frame latency | <200ms  | emacsclient -c responsiveness |
+| NF3 | First org open      | <300ms  | Common first action          |
+
+** Success Criteria
+
+- Daemon init <600ms (3-run average)
+- All features verified: evil, evil-collection, general, which-key, vertico, corfu, doom-modeline, envrc, treesit-auto
+- Babel lazy loading: ob-shell loads on first block execution, ob-python stays unloaded until used
+- No regressions in interactive editing (Evil bindings, SPC leader, LSP)
+
+* Analysis
+
+** Granular init-evil Breakdown
+
+| Component             | Time (ms) | Notes                              |
+|-----------------------+-----------+------------------------------------|
+| evil + evil-mode      |       200 | Package load + mode activation     |
+| evil-collection-init  |        52 | eval-after-load for 80+ modes      |
+| general + which-key   |        23 | SPC keymap creation (60+ bindings) |
+
+Evil itself (200ms) is irreducible — the package is large (evil-vars, evil-states, evil-core, evil-repeat, evil-macros, evil-types, evil-ex, evil-search, evil-commands, evil-maps, evil-integration) and all of it is needed for ~evil-mode 1~.
+
+** Approaches Investigated
+
+*** A: evil-collection explicit mode list
+
+Hypothesis: Limiting ~evil-collection-init~ to ~40 commonly used modes (vs default 80+) would reduce setup time.
+
+Result: *Slower* (95ms vs 52ms). The explicit list adds argument validation and per-entry hash-table lookups. The default path uses a pre-built iteration over ~evil-collection-mode-list~ which is more efficient. Most unused modes just register an ~eval-after-load~ hook (~near-zero cost~).
+
+*Verdict: Rejected.*
+
+*** B: Byte-compile lisp/ modules
+
+Hypothesis: Byte-compiled ~.elc~ files would reduce load time by eliminating parse + macro-expansion overhead.
+
+Result: *~50ms savings* (614ms → 542ms average). But stale ~.elc~ files cause breakage because ~general-create-definer~ creates macros at runtime that the byte-compiler captures. When ~.elc~ is loaded in a fresh Emacs where ~general~ hasn't been required yet, ~kp/leader-def~ is undefined → ~Invalid function~ error.
+
+Auto-recompilation via ~kill-emacs-hook~ doesn't reliably solve the macro ordering issue. The ~.elc~ depends on compilation-time state that differs from load-time state.
+
+*Verdict: Rejected — footgun outweighs 50ms savings.*
+
+*** C: Defer doom-modeline to after-init-hook
+
+Hypothesis: ~doom-modeline~ with ~:demand t~ loads nerd-icons and creates modeline segments eagerly.
+
+Result: *55ms savings*. ~after-init-hook~ still runs during ~emacs --daemon~ startup, so all features are active before any user interaction. No modeline flash — daemon frames don't exist until ~emacsclient -c~, at which point doom-modeline is already active.
+
+*Verdict: Applied.*
+
+*** D: Defer treesit-auto to after-init-hook
+
+Same reasoning as doom-modeline.
+
+Result: *5ms savings*. Treesit grammar hooks are registered at after-init, still before any file open.
+
+*Verdict: Applied.*
+
+*** E: Lazy babel loading via advice
+
+Hypothesis: ~org-babel-do-load-languages~ eagerly requires 5 ob-* backends when org first loads. Most sessions only use 1–2 languages.
+
+Result: *200–400ms savings on first org file open*. Advice on ~org-babel-execute-src-block~ auto-requires ~ob-LANG~ on first block execution. R gets special handling (~require 'ess-r-mode~ before ~ob-R~). The ~org-babel-load-languages~ variable is still set so Org's language validation passes.
+
+*Verdict: Applied.*
+
+*** F: Defer envrc to after-init-hook
+
+Hypothesis: ~envrc-global-mode~ adds hooks that run ~direnv export~ subprocess on every file visit.
+
+Result: *Not safe to defer*. In daemon mode, ~after-init-hook~ runs during startup (same as ~:demand t~), so no timing difference. If truly deferred to ~find-file-hook~, eglot would start before direnv sets ~PATH~, ~VIRTUAL_ENV~, etc. → wrong Python/LSP.
+
+*Verdict: Keep ~:demand t~.*
+
+* Applied Changes
+
+** init-ui.el — doom-modeline deferral
+
+#+begin_src diff
+-;; --- Modeline ---
+-(use-package doom-modeline
+-  :demand t
+-  :config
++;; --- Modeline (deferred to after-init to avoid blocking startup) ---
++(use-package doom-modeline
++  :hook (after-init . doom-modeline-mode)
++  :config
+#+end_src
+
+** init-tools.el — treesit-auto deferral
+
+#+begin_src diff
+-;; --- Treesit-auto (auto-install grammars) ---
+-(use-package treesit-auto
+-  :demand t
+-  :config
+-  (setq treesit-auto-install 'prompt)
+-  (global-treesit-auto-mode 1))
++;; --- Treesit-auto (auto-install grammars, deferred to after-init) ---
++(use-package treesit-auto
++  :hook (after-init . global-treesit-auto-mode)
++  :config
++  (setq treesit-auto-install 'prompt))
+#+end_src
+
+** init-org.el — lazy babel loading
+
+Replaced ~org-babel-do-load-languages~ + separate R advice with unified lazy loader:
+
+#+begin_src elisp
+;; Declare available languages (no eager loading)
+(setq org-babel-load-languages
+      '((emacs-lisp . t) (python . t) (shell . t)
+        (sql . t) (latex . t) (R . t)))
+
+;; Auto-require ob-LANG on first block execution
+(defun kp/org-babel-ensure-backend (&optional _arg _info _params)
+  "Auto-require ob-LANG before executing a source block."
+  (when-let* ((info (org-babel-get-src-block-info t))
+              (lang (car info))
+              (feature-name (pcase lang
+                              ((or "sh" "bash") "shell")
+                              ("R" (require 'ess-r-mode nil t) "R")
+                              (_ lang)))
+              (sym (intern (format "ob-%s" feature-name))))
+    (unless (featurep sym) (require sym nil t))))
+(advice-add 'org-babel-execute-src-block :before #'kp/org-babel-ensure-backend)
+#+end_src
+
+Language alias mapping: ~sh~ / ~bash~ → ~ob-shell~. R loads ~ess-r-mode~ first (ESS dependency).
+
+* Results
+
+** Daemon Startup (3-run average, M5 Max ARM64)
+
+| Metric         | Before | After  | Delta  |
+|----------------+--------+--------+--------|
+| init-evil      | 302ms  | 293ms  | -9ms   |
+| init-completion| 33ms   | 32ms   | -1ms   |
+| init-ui        | 68ms   | 13ms   | *-55ms*  |
+| init-tools     | 45ms   | 38ms   | *-7ms*   |
+| Module total   | 391ms  | 341ms  | -50ms  |
+| *Daemon init*  | *635ms*  | *569ms*  | *-66ms (10%)* |
+
+** First Org File Open (estimated)
+
+| Metric                | Before     | After    |
+|-----------------------+------------+----------|
+| org-babel-do-load-languages | 200-400ms | 0ms |
+| First block execution | 0ms        | ~30ms (one-time ob-LANG require) |
+
+** Verification
+
+All features confirmed operational after optimization:
+
+| Feature           | Status |
+|-------------------+--------|
+| evil-mode         | OK     |
+| evil-collection   | OK     |
+| general (SPC)     | OK     |
+| which-key         | OK     |
+| vertico           | OK     |
+| corfu             | OK     |
+| doom-modeline     | OK     |
+| envrc             | OK     |
+| treesit-auto      | OK     |
+| Babel lazy (shell) | OK — ob-shell loaded on demand |
+| Babel lazy (python)| OK — ob-python stays unloaded |
+
+* Decision Log
+
+| Date       | Decision                            | Rationale                                        |
+|------------+-------------------------------------+--------------------------------------------------|
+| 2026-03-22 | Reject evil-collection explicit list | Slower than default (95ms vs 52ms)               |
+| 2026-03-22 | Reject byte-compilation             | Stale .elc + general macros = breakage           |
+| 2026-03-22 | Apply doom-modeline after-init      | 55ms savings, no UX penalty in daemon mode       |
+| 2026-03-22 | Apply treesit-auto after-init       | 5ms savings, same reasoning                      |
+| 2026-03-22 | Apply lazy babel loading             | 200-400ms savings on first org open              |
+| 2026-03-22 | Keep envrc :demand t                | Must load before eglot for correct PATH          |
+
+* References
+
+- [[file:../README.org][Emacs README]] — module reference and keybinding table
+- [[file:../../../docs/2026-03-18-dotfiles-design.org][Dotfiles Design Doc]] — overall config patterns
+- [[file:../../../docs/2026-03-18-dotfiles-architecture.org][Dotfiles Architecture Doc]] — system topology

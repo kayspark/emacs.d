@@ -67,9 +67,9 @@
     (add-hook 'server-after-make-frame-hook #'kp/setup-fontsets)
   (add-hook 'after-init-hook #'kp/setup-fontsets))
 
-;; --- Modeline ---
+;; --- Modeline (deferred to after-init to avoid blocking startup) ---
 (use-package doom-modeline
-  :demand t
+  :hook (after-init . doom-modeline-mode)
   :config
   (setq doom-modeline-icon t
         doom-modeline-major-mode-icon t
@@ -78,8 +78,7 @@
         doom-modeline-buffer-encoding t
         doom-modeline-modal-modern-icon t
         doom-modeline-height 27
-        doom-modeline-bar-width 3)
-  (doom-modeline-mode 1))
+        doom-modeline-bar-width 3))
 
 ;; --- Editor defaults ---
 (setq display-line-numbers-type 'relative
