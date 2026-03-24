@@ -31,6 +31,26 @@
         org-highlight-latex-and-related '(latex script entities)
         org-confirm-babel-evaluate nil)
 
+  ;; Inline PDF display: Emacs has no native PDF image type.
+  ;; Adding "pdf" to image-file-name-extensions causes Emacs to try decoding
+  ;; PDF data as an image → hang. Instead, rewrite [[file:*.pdf]] links to
+  ;; [[file:*.pdf.png]] in the buffer before org-display-inline-images runs.
+  ;; Pre-render caches with: pdftoppm -png -r 150 -singlefile FILE.pdf FILE.pdf
+  (defun kp/org-pdf-inline-images (&rest _)
+    "Temporarily rewrite PDF image links to their PNG cache for inline display."
+    (org-with-wide-buffer
+     (goto-char (point-min))
+     (while (re-search-forward "\\[\\[file:\\([^]]+\\.pdf\\)\\]\\]" nil t)
+       (let* ((pdf (match-string 1))
+              (png (concat pdf ".png"))
+              (abs-png (expand-file-name png default-directory)))
+         (when (file-exists-p abs-png)
+           (let ((ov (make-overlay (match-beginning 0) (match-end 0))))
+             (overlay-put ov 'display
+                          (create-image abs-png nil nil
+                                        :width (truncate (* (frame-pixel-width) 0.8))))))))))
+  (advice-add 'org-display-inline-images :after #'kp/org-pdf-inline-images)
+
   (setq org-todo-keywords
         '((sequence "PLANNED(p)" "TODO(t)" "PROG(g)" "REVIEW(r)" "|" "DONE(d)" "CANCEL(c)")))
   (setq org-todo-keyword-faces

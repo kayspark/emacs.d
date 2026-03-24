@@ -145,11 +145,17 @@
 ;; --- R (ESS + eglot) ---
 (use-package ess
   :defer t
+  :init
+  ;; Prevent ESS from starting an inferior R process on mode activation.
+  ;; Without this, opening an R src block in org (for fontification) or
+  ;; visiting a .R file in daemon mode hangs Emacs.
+  (setq ess-ask-for-ess-directory nil
+        inferior-ess-r-program "R"
+        ess-r-package-auto-enable-namespaced-evaluation nil
+        ess-gen-proc-buffer-name-function #'ess-gen-proc-buffer-name:simple)
   :config
   (setq ess-use-flymake nil           ; use eglot instead
-        ess-style 'RStudio
-        ess-ask-for-ess-directory nil  ; use default-directory
-        inferior-R-program-name "R"))
+        ess-style 'RStudio))
 
 (with-eval-after-load 'eglot
   (add-to-list 'eglot-server-programs '(ess-r-mode . ("R" "--slave" "-e" "languageserver::run()"))))

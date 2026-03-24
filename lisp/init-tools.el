@@ -70,7 +70,10 @@
 ;; --- Jinx (modern spell-checker) ---
 (use-package jinx
   :defer t
-  :hook (text-mode . jinx-mode)
+  ;; Exclude org-mode: jinx hangs on Korean + LaTeX tables during org-cycle.
+  ;; Enchant scans the entire newly-visible region synchronously.
+  :hook ((text-mode . jinx-mode)
+         (org-mode . (lambda () (jinx-mode -1))))
   :bind ([remap ispell-word] . jinx-correct)
   :config
   (setq jinx-languages "en_US ko_KR"))
