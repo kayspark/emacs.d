@@ -62,6 +62,11 @@
         '((emacs-lisp . t) (python . t) (shell . t)
           (sql . t) (latex . t) (R . t)))
 
+  ;; Lazy-load babel backends on first block execution.
+  ;; R/ESS: ob-R requires ESS which starts an inferior R process — this hangs
+  ;; in daemon/batch mode without a frame. R babel only works from interactive
+  ;; frames (emacsclient -c/-nw). For daemon/batch R, use Rscript via ob-shell
+  ;; or the org-export skill's standalone Rscript approach.
   (defun kp/org-babel-ensure-backend (&optional _arg _info _params)
     "Auto-require ob-LANG before executing a source block."
     (when-let* ((info (org-babel-get-src-block-info t))
