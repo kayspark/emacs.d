@@ -31,16 +31,12 @@
     (:import
      (:gradle
       (:java
-       (:home "/Library/Java/JavaVirtualMachines/openjdk8-temurin/Contents/Home")))
+       (:home "/opt/local/Library/Java/JavaVirtualMachines/jdk-21-eclipse-temurin.jdk/Contents/Home")))
      :configuration
      (:runtimes
-      [(:name "JavaSE-1.8"
-        :path "/Library/Java/JavaVirtualMachines/openjdk8-temurin/Contents/Home"
-        :default t)
-       (:name "JavaSE-11"
-        :path "/opt/local/Library/Java/JavaVirtualMachines/openjdk11-temurin/Contents/Home")
-       (:name "JavaSE-21"
-        :path "/opt/local/Library/Java/JavaVirtualMachines/jdk-21-eclipse-temurin.jdk/Contents/Home")]))))
+      [(:name "JavaSE-21"
+        :path "/opt/local/Library/Java/JavaVirtualMachines/jdk-21-eclipse-temurin.jdk/Contents/Home"
+        :default t)]))))
 
 (setq-default eglot-workspace-configuration #'kp/java-eglot-workspace-config)
 
