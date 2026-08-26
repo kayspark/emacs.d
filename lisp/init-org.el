@@ -414,7 +414,7 @@
         (when (re-search-forward "\\[cite:@\\([^]]+\\)\\]" nil t)
           (setq cite-key (match-string 1))))
       (if cite-key
-          (if-let ((files (citar-get-files (list cite-key))))
+          (if-let* ((files (citar-get-files (list cite-key))))
               (funcall citar-file-open-function (car files))
             (message "No PDF found for cite key: %s" cite-key))
         (message "No [cite:@key] found in %s" (file-name-nondirectory file)))))
