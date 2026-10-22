@@ -2,6 +2,10 @@
 
 ;; Evil mode — Vim keybindings
 (use-package evil
+  ;; NonGNU ELPA still serves 1.15.0 (2022), which reads `evil-mode-buffers`;
+  ;; Emacs 31 no longer defines it, so every startup logs a void-variable
+  ;; error from `evil-normal-post-command`. MELPA tracks upstream, which fixed it.
+  :pin melpa
   :demand t
   :init
   (setq evil-want-integration t
